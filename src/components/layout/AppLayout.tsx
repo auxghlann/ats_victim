@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SideNavBar } from "./SideNavBar";
 import { User } from "@/types/database";
 
@@ -9,14 +9,47 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
+const DEFAULT_SIDEBAR_WIDTH = 260;
+
 export function AppLayout({ user, children }: AppLayoutProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(DEFAULT_SIDEBAR_WIDTH);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+
+  // Clean up any previously persisted keys so localStorage is not used
+  useEffect(() => {
+    try {
+      localStorage.removeItem("ats_sidebar_width");
+      localStorage.removeItem("ats_sidebar_collapsed");
+    } catch {
+      // Ignore storage access issues
+    }
+  }, []);
+
+  const handleToggleCollapse = () => {
+    setIsCollapsed((prev) => !prev);
+  };
+
+  const handleWidthChange = (newWidth: number) => {
+    setSidebarWidth(newWidth);
+  };
+
+  const handleWidthCommit = (finalWidth: number) => {
+    setSidebarWidth(finalWidth);
+  };
 
   return (
-    <div className="min-h-screen bg-background text-on-surface flex">
-      {/* Desktop Persistent Sidebar */}
-      <div className="hidden md:block">
-        <SideNavBar user={user} />
+    <div className="min-h-screen bg-background text-on-surface flex w-full">
+      {/* Desktop Persistent Sidebar (Sticky Flex Column) */}
+      <div className="hidden md:block shrink-0">
+        <SideNavBar
+          user={user}
+          width={sidebarWidth}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={handleToggleCollapse}
+          onWidthChange={handleWidthChange}
+          onWidthCommit={handleWidthCommit}
+        />
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -32,10 +65,10 @@ export function AppLayout({ user, children }: AppLayoutProps) {
         </div>
       )}
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col md:ml-72 min-h-screen w-full">
+      {/* Main Content Area: Automatically occupies remaining viewport width with zero margin recalculation */}
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 w-full">
         {/* Top App Bar */}
-        <header className="sticky top-0 z-30 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30 px-6 py-3.5 flex items-center justify-between">
+        <header className="sticky top-0 z-20 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30 px-6 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileNavOpen(true)}
@@ -58,9 +91,9 @@ export function AppLayout({ user, children }: AppLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 p-6 md:p-10 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-6 md:p-10 max-w-7xl w-full mx-auto">
           {children}
-        </div>
+        </main>
       </div>
     </div>
   );

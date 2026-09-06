@@ -1,10 +1,20 @@
 import { getDatabase } from "@/lib/db";
 import { Application, ApplicationStatus } from "@/types/database";
 
+export type ApplicationSortColumn =
+  | "company_name"
+  | "job_title"
+  | "status"
+  | "location"
+  | "salary_min"
+  | "last_activity_date"
+  | "date_applied";
+
 export interface ListApplicationsOptions {
   search?: string;
   status?: string;
-  sortBy?: "company_name" | "status" | "last_activity_date" | "date_applied";
+  workSetup?: string;
+  sortBy?: ApplicationSortColumn;
   sortOrder?: "asc" | "desc";
   page?: number;
   pageSize?: number;
@@ -18,10 +28,11 @@ export function listApplications(
   const {
     search,
     status,
+    workSetup,
     sortBy = "last_activity_date",
     sortOrder = "desc",
     page = 1,
-    pageSize = 50,
+    pageSize = 10,
   } = options;
 
   const conditions: string[] = ["user_id = ?"];
@@ -30,6 +41,11 @@ export function listApplications(
   if (status && status !== "all") {
     conditions.push("status = ?");
     params.push(status);
+  }
+
+  if (workSetup && workSetup !== "all") {
+    conditions.push("work_setup = ?");
+    params.push(workSetup);
   }
 
   if (search && search.trim() !== "") {
@@ -44,15 +60,27 @@ export function listApplications(
   const totalResult = db.prepare(countSql).get(...params) as { total: number };
   const total = totalResult ? totalResult.total : 0;
 
-  const allowedSortColumns = ["company_name", "status", "last_activity_date", "date_applied"];
-  const safeSortBy = allowedSortColumns.includes(sortBy) ? sortBy : "last_activity_date";
+  const allowedSortColumns: Record<ApplicationSortColumn, string> = {
+    company_name: "company_name COLLATE NOCASE",
+    job_title: "job_title COLLATE NOCASE",
+    status: "status",
+    location: "location COLLATE NOCASE",
+    salary_min: "salary_min",
+    last_activity_date: "COALESCE(last_activity_date, date_applied)",
+    date_applied: "date_applied",
+  };
+
+  const safeSortColumn =
+    sortBy && sortBy in allowedSortColumns
+      ? allowedSortColumns[sortBy]
+      : "COALESCE(last_activity_date, date_applied)";
   const safeSortOrder = sortOrder.toLowerCase() === "asc" ? "ASC" : "DESC";
 
   const offset = (page - 1) * pageSize;
   const querySql = `
     SELECT * FROM applications 
     WHERE ${whereClause} 
-    ORDER BY ${safeSortBy} ${safeSortOrder} 
+    ORDER BY ${safeSortColumn} ${safeSortOrder} 
     LIMIT ? OFFSET ?
   `;
 
@@ -72,6 +100,7 @@ export function createApplication(
     job_title: string;
     status?: ApplicationStatus;
     location?: string | null;
+    work_setup?: import("@/types/database").WorkSetup | null;
     salary_min?: number | null;
     salary_max?: number | null;
     salary_currency?: string;
@@ -86,11 +115,11 @@ export function createApplication(
 
   const insertSql = `
     INSERT INTO applications (
-      id, user_id, company_name, job_title, status, location,
+      id, user_id, company_name, job_title, status, location, work_setup,
       salary_min, salary_max, salary_currency, date_applied, last_activity_date,
       created_at, updated_at
     ) VALUES (
-      ?, ?, ?, ?, ?, ?,
+      ?, ?, ?, ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?
     ) RETURNING *
@@ -105,6 +134,7 @@ export function createApplication(
       data.job_title,
       status,
       data.location || null,
+      data.work_setup || null,
       data.salary_min || null,
       data.salary_max || null,
       data.salary_currency || "USD",
@@ -129,6 +159,7 @@ export function updateApplication(
     "job_title",
     "status",
     "location",
+    "work_setup",
     "salary_min",
     "salary_max",
     "salary_currency",

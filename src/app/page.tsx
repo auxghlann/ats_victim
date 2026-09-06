@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { applicationsService } from "@/lib/services/applicationsService";
 import { STATUS_BADGE_CLASSES } from "@/types/database";
 
@@ -12,11 +11,8 @@ export default async function HomePage() {
 
   const { counts, recentApplications } = await applicationsService.getDashboardMetrics(userId);
 
-
-
   return (
-    <AppLayout user={user}>
-      <div className="space-y-8">
+    <div className="space-y-8">
         {/* Welcome Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -169,6 +165,5 @@ export default async function HomePage() {
           </div>
         </div>
       </div>
-    </AppLayout>
   );
 }

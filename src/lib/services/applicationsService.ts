@@ -1,18 +1,21 @@
 import { applicationsRepository, ListApplicationsOptions } from "@/lib/repositories/applicationsRepository";
 import { applicationDetailsRepository } from "@/lib/repositories/applicationDetailsRepository";
-import { Application, ApplicationDetail, ApplicationStatus } from "@/types/database";
+import { getDatabase } from "@/lib/db";
+import { Application, ApplicationDetail, ApplicationStatus, WorkSetup } from "@/types/database";
 
 export interface CreateApplicationInput {
   company_name: string;
   job_title: string;
   status?: ApplicationStatus;
   location?: string;
+  work_setup?: WorkSetup;
   salary_min?: number;
   salary_max?: number;
   posting_url?: string;
   job_description?: string;
   notes?: string;
 }
+
 
 export async function listApplications(
   userId: string,
@@ -56,6 +59,7 @@ export async function createApplication(
     job_title: jobTitle,
     status: input.status || "applied",
     location: input.location?.trim() || null,
+    work_setup: input.work_setup || null,
     salary_min: input.salary_min ?? null,
     salary_max: input.salary_max ?? null,
   });
@@ -105,18 +109,6 @@ export async function updateStatus(
   return updated;
 }
 
-export async function updateNotes(
-  userId: string,
-  applicationId: string,
-  notes: string
-): Promise<ApplicationDetail> {
-  if (!userId || !applicationId) throw new Error("User ID and Application ID are required");
-
-  return applicationDetailsRepository.upsertApplicationDetails(applicationId, {
-    notes,
-  });
-}
-
 export async function deleteApplication(userId: string, applicationId: string): Promise<boolean> {
   if (!userId || !applicationId) throw new Error("User ID and Application ID are required");
 
@@ -141,12 +133,90 @@ export async function getDashboardMetrics(userId: string) {
   };
 }
 
+export async function getApplicationTasks(userId: string, applicationId: string) {
+  if (!userId || !applicationId) throw new Error("User ID and Application ID are required");
+  const sql = `SELECT * FROM tasks WHERE user_id = ? AND application_id = ? ORDER BY created_at ASC`;
+  return getDatabase().prepare(sql).all(userId, applicationId);
+}
+
+export async function toggleTask(userId: string, taskId: string, completed: boolean) {
+  if (!userId || !taskId) throw new Error("User ID and Task ID are required");
+  const sql = `UPDATE tasks SET completed = ? WHERE user_id = ? AND id = ? RETURNING *`;
+  return getDatabase().prepare(sql).get(completed ? 1 : 0, userId, taskId);
+}
+
+export async function createTask(userId: string, applicationId: string, title: string) {
+  if (!userId || !applicationId || !title.trim()) throw new Error("Missing task requirements");
+  const id = `task-${crypto.randomUUID()}`;
+  const now = new Date().toISOString();
+  const sql = `
+    INSERT INTO tasks (id, user_id, application_id, title, completed, priority, created_at)
+    VALUES (?, ?, ?, ?, 0, 'medium', ?)
+    RETURNING *
+  `;
+  return getDatabase().prepare(sql).get(id, userId, applicationId, title.trim(), now);
+}
+
+export async function addNote(userId: string, applicationId: string, content: string) {
+  if (!userId || !applicationId || !content.trim()) throw new Error("Missing note parameters");
+  const detail = applicationDetailsRepository.getApplicationDetails(applicationId);
+
+  let notesList: { id: string; date: string; content: string }[] = [];
+  if (detail?.notes) {
+    try {
+      const parsed = JSON.parse(detail.notes);
+      notesList = Array.isArray(parsed) ? parsed : [{ id: "note-1", date: "Initial Note", content: detail.notes }];
+    } catch {
+      notesList = [{ id: "note-1", date: "Initial Note", content: detail.notes }];
+    }
+  }
+
+  const newNote = {
+    id: `note-${Date.now()}`,
+    date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+    content: content.trim(),
+  };
+
+  notesList.unshift(newNote);
+  return applicationDetailsRepository.upsertApplicationDetails(applicationId, {
+    notes: JSON.stringify(notesList),
+  });
+}
+
+export async function updateApplication(
+  userId: string,
+  applicationId: string,
+  updates: Partial<Application>
+): Promise<Application> {
+  if (!userId || !applicationId) throw new Error("User ID and Application ID are required");
+  const updated = applicationsRepository.updateApplication(userId, applicationId, updates);
+  if (!updated) throw new Error("Application not found or failed to update");
+  return updated;
+}
+
+export async function updateJobDescription(
+  userId: string,
+  applicationId: string,
+  description: string
+) {
+  if (!userId || !applicationId) throw new Error("User ID and Application ID are required");
+  return applicationDetailsRepository.upsertApplicationDetails(applicationId, {
+    job_description: description,
+  });
+}
+
 export const applicationsService = {
   listApplications,
   getApplicationDetail,
   createApplication,
+  updateApplication,
   updateStatus,
-  updateNotes,
+  updateJobDescription,
   deleteApplication,
   getDashboardMetrics,
+  getApplicationTasks,
+  toggleTask,
+  createTask,
+  addNote,
 };
+

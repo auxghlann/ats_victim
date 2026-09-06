@@ -4,6 +4,9 @@ import "material-symbols/outlined.css";
 import "./globals.css";
 
 
+import { getCurrentUser } from "@/lib/auth/session";
+import { AppLayout } from "@/components/layout/AppLayout";
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -15,15 +18,19 @@ export const metadata: Metadata = {
   description: "AI-powered job application tracking platform with automated Gmail synchronization",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getCurrentUser();
+
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
-        {children}
+        <AppLayout user={user}>
+          {children}
+        </AppLayout>
       </body>
     </html>
   );

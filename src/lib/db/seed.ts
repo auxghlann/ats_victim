@@ -25,7 +25,8 @@ export function seed() {
       company_name: "Google",
       job_title: "Senior AI Engineer",
       status: "interview",
-      location: "Mountain View, CA (Hybrid)",
+      location: "Mountain View, CA",
+      work_setup: "hybrid",
       salary_min: 195000,
       salary_max: 265000,
       salary_currency: "USD",
@@ -38,7 +39,8 @@ export function seed() {
       company_name: "Stripe",
       job_title: "Full Stack Infrastructure Engineer",
       status: "applied",
-      location: "San Francisco, CA (Remote)",
+      location: "San Francisco, CA",
+      work_setup: "remote",
       salary_min: 180000,
       salary_max: 230000,
       salary_currency: "USD",
@@ -52,6 +54,7 @@ export function seed() {
       job_title: "Production Engineer - ML Systems",
       status: "viewed",
       location: "Menlo Park, CA",
+      work_setup: "on-site",
       salary_min: 185000,
       salary_max: 245000,
       salary_currency: "USD",
@@ -65,6 +68,7 @@ export function seed() {
       job_title: "Member of Technical Staff - Applied AI",
       status: "accepted",
       location: "San Francisco, CA",
+      work_setup: "hybrid",
       salary_min: 240000,
       salary_max: 330000,
       salary_currency: "USD",
@@ -77,7 +81,8 @@ export function seed() {
       company_name: "Netflix",
       job_title: "Senior Platform Engineer",
       status: "rejected",
-      location: "Los Gatos, CA (Remote)",
+      location: "Los Gatos, CA",
+      work_setup: "remote",
       salary_min: 200000,
       salary_max: 270000,
       salary_currency: "USD",
@@ -88,10 +93,10 @@ export function seed() {
 
   const insertApp = db.prepare(`
     INSERT OR REPLACE INTO applications (
-      id, user_id, company_name, job_title, status, location,
+      id, user_id, company_name, job_title, status, location, work_setup,
       salary_min, salary_max, salary_currency, date_applied, last_activity_date
     ) VALUES (
-      @id, @user_id, @company_name, @job_title, @status, @location,
+      @id, @user_id, @company_name, @job_title, @status, @location, @work_setup,
       @salary_min, @salary_max, @salary_currency, @date_applied, @last_activity_date
     )
   `);
