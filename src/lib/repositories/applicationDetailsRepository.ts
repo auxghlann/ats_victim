@@ -29,7 +29,7 @@ export function upsertApplicationDetails(
       posting_url = COALESCE(excluded.posting_url, application_details.posting_url),
       job_description = COALESCE(excluded.job_description, application_details.job_description),
       notes = COALESCE(excluded.notes, application_details.notes),
-      timeline = COALESCE(excluded.timeline, application_details.timeline),
+      timeline = COALESCE(?, application_details.timeline),
       updated_at = excluded.updated_at
     RETURNING *
   `;
@@ -44,7 +44,8 @@ export function upsertApplicationDetails(
       details.notes ?? null,
       timelineStr,
       now,
-      now
+      now,
+      timelineStr
     ) as ApplicationDetail;
 }
 

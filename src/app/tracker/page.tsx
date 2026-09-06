@@ -1,17 +1,16 @@
-import { getCurrentUser } from "@/lib/auth/session";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { ApplicationTracker } from "@/components/tracker/ApplicationTracker";
 import { fetchApplicationsAction } from "@/app/actions/applications";
 
 export const dynamic = "force-dynamic";
 
 export default async function TrackerPage() {
-  const user = await getCurrentUser();
-  const { items, counts } = await fetchApplicationsAction();
+  const { items, counts, total } = await fetchApplicationsAction({ page: 1, pageSize: 10 });
 
   return (
-    <AppLayout user={user}>
-      <ApplicationTracker initialItems={items} initialCounts={counts} />
-    </AppLayout>
+    <ApplicationTracker
+      initialItems={items}
+      initialCounts={counts}
+      initialTotal={total}
+    />
   );
 }

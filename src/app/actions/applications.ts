@@ -13,13 +13,6 @@ export async function fetchApplicationsAction(options: ListApplicationsOptions =
   return applicationsService.listApplications(user.id, options);
 }
 
-export async function fetchApplicationDetailAction(applicationId: string) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  return applicationsService.getApplicationDetail(user.id, applicationId);
-}
-
 export async function createApplicationAction(formData: CreateApplicationInput) {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
@@ -45,19 +38,6 @@ export async function updateApplicationStatusAction(
   return updated;
 }
 
-export async function updateApplicationNotesAction(
-  applicationId: string,
-  notes: string
-) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const updatedDetail = await applicationsService.updateNotes(user.id, applicationId, notes);
-
-  revalidatePath("/tracker");
-  return updatedDetail;
-}
-
 export async function deleteApplicationAction(applicationId: string) {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
@@ -68,3 +48,61 @@ export async function deleteApplicationAction(applicationId: string) {
   revalidatePath("/");
   return success;
 }
+
+
+export async function toggleTaskAction(taskId: string, completed: boolean, applicationId?: string) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const updated = await applicationsService.toggleTask(user.id, taskId, completed);
+  if (applicationId) {
+    revalidatePath(`/tracker/${applicationId}`);
+  }
+  revalidatePath("/tracker");
+  return updated;
+}
+
+export async function createTaskAction(applicationId: string, title: string) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const task = await applicationsService.createTask(user.id, applicationId, title);
+  revalidatePath(`/tracker/${applicationId}`);
+  return task;
+}
+
+export async function addNoteAction(applicationId: string, content: string) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const detail = await applicationsService.addNote(user.id, applicationId, content);
+  revalidatePath(`/tracker/${applicationId}`);
+  return detail;
+}
+
+export async function updateApplicationAction(
+  applicationId: string,
+  updates: Partial<import("@/types/database").Application>
+) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const updated = await applicationsService.updateApplication(user.id, applicationId, updates);
+  revalidatePath("/tracker");
+  revalidatePath(`/tracker/${applicationId}`);
+  revalidatePath("/");
+  return updated;
+}
+
+export async function updateJobDescriptionAction(
+  applicationId: string,
+  description: string
+) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const detail = await applicationsService.updateJobDescription(user.id, applicationId, description);
+  revalidatePath(`/tracker/${applicationId}`);
+  return detail;
+}
+

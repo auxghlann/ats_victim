@@ -23,6 +23,7 @@ export function AddApplicationModal({
     job_title: "",
     status: "applied" as ApplicationStatus,
     location: "",
+    work_setup: "remote" as import("@/types/database").WorkSetup,
     salary_min: "",
     salary_max: "",
     posting_url: "",
@@ -48,6 +49,7 @@ export function AddApplicationModal({
         job_title: formData.job_title.trim(),
         status: formData.status,
         location: formData.location.trim() || undefined,
+        work_setup: formData.work_setup,
         salary_min: formData.salary_min ? Number(formData.salary_min) : undefined,
         salary_max: formData.salary_max ? Number(formData.salary_max) : undefined,
         posting_url: formData.posting_url.trim() || undefined,
@@ -169,13 +171,33 @@ export function AddApplicationModal({
               </label>
               <input
                 type="text"
-                placeholder="e.g. Remote, San Francisco, CA"
+                placeholder="e.g. San Francisco, CA"
                 value={formData.location}
                 onChange={(e) =>
                   setFormData({ ...formData, location: e.target.value })
                 }
                 className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all"
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-on-surface mb-1.5">
+                Work Setup
+              </label>
+              <select
+                value={formData.work_setup}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    work_setup: e.target.value as import("@/types/database").WorkSetup,
+                  })
+                }
+                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all capitalize"
+              >
+                <option value="remote">Remote</option>
+                <option value="hybrid">Hybrid</option>
+                <option value="on-site">On-site</option>
+              </select>
             </div>
           </div>
 

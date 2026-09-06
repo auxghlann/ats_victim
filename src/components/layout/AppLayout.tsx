@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SideNavBar } from "./SideNavBar";
 import { User } from "@/types/database";
 
@@ -9,14 +9,77 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
+let cachedSidebarWidth = 260;
+let cachedIsCollapsed = false;
+let hasLoadedFromStorage = false;
+
 export function AppLayout({ user, children }: AppLayoutProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => cachedSidebarWidth);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => cachedIsCollapsed);
+
+  useEffect(() => {
+    if (hasLoadedFromStorage) return;
+    const frame = requestAnimationFrame(() => {
+      try {
+        const savedWidth = localStorage.getItem("ats_sidebar_width");
+        if (savedWidth) {
+          const parsed = parseInt(savedWidth, 10);
+          if (!isNaN(parsed) && parsed >= 200 && parsed <= 420) {
+            cachedSidebarWidth = parsed;
+            setSidebarWidth(parsed);
+          }
+        }
+        const savedCollapsed = localStorage.getItem("ats_sidebar_collapsed");
+        if (savedCollapsed !== null) {
+          const collapsed = savedCollapsed === "true";
+          cachedIsCollapsed = collapsed;
+          setIsCollapsed(collapsed);
+        }
+        hasLoadedFromStorage = true;
+      } catch {
+        // Ignore potential localStorage errors
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  const handleToggleCollapse = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      cachedIsCollapsed = next;
+      try {
+        localStorage.setItem("ats_sidebar_collapsed", String(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const handleWidthChange = (newWidth: number) => {
+    cachedSidebarWidth = newWidth;
+    setSidebarWidth(newWidth);
+  };
+
+  const handleWidthCommit = (finalWidth: number) => {
+    cachedSidebarWidth = finalWidth;
+    setSidebarWidth(finalWidth);
+    try {
+      localStorage.setItem("ats_sidebar_width", String(finalWidth));
+    } catch {}
+  };
 
   return (
-    <div className="min-h-screen bg-background text-on-surface flex">
-      {/* Desktop Persistent Sidebar */}
-      <div className="hidden md:block">
-        <SideNavBar user={user} />
+    <div className="min-h-screen bg-background text-on-surface flex w-full">
+      {/* Desktop Persistent Sidebar (Sticky Flex Column) */}
+      <div className="hidden md:block shrink-0">
+        <SideNavBar
+          user={user}
+          width={sidebarWidth}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={handleToggleCollapse}
+          onWidthChange={handleWidthChange}
+          onWidthCommit={handleWidthCommit}
+        />
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -32,10 +95,10 @@ export function AppLayout({ user, children }: AppLayoutProps) {
         </div>
       )}
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col md:ml-72 min-h-screen w-full">
+      {/* Main Content Area: Automatically occupies remaining viewport width with zero margin recalculation */}
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 w-full">
         {/* Top App Bar */}
-        <header className="sticky top-0 z-30 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30 px-6 py-3.5 flex items-center justify-between">
+        <header className="sticky top-0 z-20 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30 px-6 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileNavOpen(true)}
@@ -58,9 +121,9 @@ export function AppLayout({ user, children }: AppLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 p-6 md:p-10 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-6 md:p-10 max-w-7xl w-full mx-auto">
           {children}
-        </div>
+        </main>
       </div>
     </div>
   );

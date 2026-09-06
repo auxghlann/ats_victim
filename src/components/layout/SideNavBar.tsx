@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { User } from "@/types/database";
@@ -7,10 +8,24 @@ import { User } from "@/types/database";
 interface SideNavBarProps {
   user: User | null;
   onCloseMobile?: () => void;
+  width?: number;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
+  onWidthChange?: (newWidth: number) => void;
+  onWidthCommit?: (newWidth: number) => void;
 }
 
-export function SideNavBar({ user, onCloseMobile }: SideNavBarProps) {
+export function SideNavBar({
+  user,
+  onCloseMobile,
+  width = 260,
+  isCollapsed = false,
+  onToggleCollapse,
+  onWidthChange,
+  onWidthCommit,
+}: SideNavBarProps) {
   const pathname = usePathname();
+  const [isResizing, setIsResizing] = useState(false);
 
   const navItems = [
     { label: "Dashboard", href: "/", icon: "dashboard" },
@@ -24,24 +39,62 @@ export function SideNavBar({ user, onCloseMobile }: SideNavBarProps) {
     return pathname.startsWith(href);
   };
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+    const startX = e.clientX;
+    const startWidth = width;
+    let latestWidth = startWidth;
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientX - startX;
+      latestWidth = Math.max(200, Math.min(420, startWidth + delta));
+      onWidthChange?.(latestWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      onWidthCommit?.(latestWidth);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const effectiveWidth = isCollapsed ? 72 : width;
+
   return (
-    <aside className="h-screen w-72 flex-col fixed left-0 top-0 bg-surface-container border-r border-outline-variant/40 z-50 flex py-6 select-none">
-      {/* Brand Header */}
-      <div className="px-6 mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold shadow-xs">
+    <aside
+      style={{ width: `${effectiveWidth}px` }}
+      className={`h-screen flex-col sticky top-0 bg-surface-container border-r border-outline-variant/40 z-30 flex py-6 select-none shrink-0 relative group/sidebar ${
+        isResizing ? "transition-none" : "transition-[width] duration-200 ease-in-out"
+      }`}
+    >
+      {/* Brand Header & Retraction Button */}
+      <div className={`px-4 mb-8 flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 shrink-0 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold shadow-xs">
             <span className="material-symbols-outlined text-2xl">work</span>
           </div>
-          <div>
-            <h1 className="text-base font-bold text-primary tracking-tight leading-tight">
-              ATS Victim
-            </h1>
-            <p className="text-xs font-medium text-on-surface-variant">
-              Track while waiting!
-            </p>
-          </div>
+          {!isCollapsed && (
+            <div className="min-w-0">
+              <h1 className="text-base font-bold text-primary tracking-tight leading-tight truncate">
+                ATS Victim
+              </h1>
+              <p className="text-xs font-medium text-on-surface-variant truncate">
+                Track while waiting!
+              </p>
+            </div>
+          )}
         </div>
 
+        {/* Mobile Close Button */}
         {onCloseMobile && (
           <button
             onClick={onCloseMobile}
@@ -51,7 +104,33 @@ export function SideNavBar({ user, onCloseMobile }: SideNavBarProps) {
             <span className="material-symbols-outlined text-lg">close</span>
           </button>
         )}
+
+        {/* Desktop Retraction / Collapse Toggle */}
+        {!onCloseMobile && onToggleCollapse && !isCollapsed && (
+          <button
+            onClick={onToggleCollapse}
+            className="p-1.5 rounded-full hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors"
+            title="Retract sidebar"
+            aria-label="Retract sidebar"
+          >
+            <span className="material-symbols-outlined text-xl">menu_open</span>
+          </button>
+        )}
       </div>
+
+      {/* When collapsed, show expand button at top */}
+      {!onCloseMobile && onToggleCollapse && isCollapsed && (
+        <div className="px-2 mb-4 flex justify-center">
+          <button
+            onClick={onToggleCollapse}
+            className="p-2 rounded-xl hover:bg-surface-variant text-on-surface-variant hover:text-primary transition-colors"
+            title="Expand sidebar"
+            aria-label="Expand sidebar"
+          >
+            <span className="material-symbols-outlined text-xl">chevron_right</span>
+          </button>
+        </div>
+      )}
 
       {/* Navigation Links */}
       <nav className="flex-1 px-3 space-y-1">
@@ -62,20 +141,26 @@ export function SideNavBar({ user, onCloseMobile }: SideNavBarProps) {
               key={item.href}
               href={item.href}
               onClick={onCloseMobile}
-              className={`flex items-center gap-4 px-5 py-3 rounded-full text-sm font-medium transition-all duration-150 ${active
+              title={isCollapsed ? item.label : undefined}
+              className={`flex items-center rounded-full text-sm font-medium transition-all duration-150 ${
+                isCollapsed
+                  ? "justify-center w-11 h-11 mx-auto"
+                  : "gap-4 px-5 py-3"
+              } ${
+                active
                   ? "bg-primary text-on-primary shadow-xs"
                   : "text-on-surface-variant hover:bg-surface-variant/70 hover:text-on-surface"
-                }`}
+              }`}
             >
               <span
-                className="material-symbols-outlined text-xl"
+                className="material-symbols-outlined text-xl shrink-0"
                 style={{
                   fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0",
                 }}
               >
                 {item.icon}
               </span>
-              <span>{item.label}</span>
+              {!isCollapsed && <span className="truncate">{item.label}</span>}
             </Link>
           );
         })}
@@ -83,23 +168,49 @@ export function SideNavBar({ user, onCloseMobile }: SideNavBarProps) {
 
       {/* User Session Footer */}
       {user && (
-        <div className="px-4 mt-auto pt-4 border-t border-outline-variant/30">
-          <div className="flex items-center gap-3 p-2 rounded-2xl bg-surface/60 border border-outline-variant/30">
-            <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+        <div className="px-3 mt-auto pt-4 border-t border-outline-variant/30">
+          <div
+            className={`flex items-center rounded-2xl bg-surface/60 border border-outline-variant/30 ${
+              isCollapsed ? "justify-center p-2" : "gap-3 p-2"
+            }`}
+          >
+            <div
+              className="w-9 h-9 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm"
+              title={user.name || "User"}
+            >
               {user.name?.charAt(0) || "U"}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-on-surface truncate">
-                {user.name}
-              </p>
-              <p className="text-[11px] text-on-surface-variant truncate">
-                {user.email}
-              </p>
-            </div>
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-status-applied/10 text-status-applied border border-status-applied/20">
-              Dev
-            </span>
+            {!isCollapsed && (
+              <>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-on-surface truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-[11px] text-on-surface-variant truncate">
+                    {user.email}
+                  </p>
+                </div>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-status-applied/10 text-status-applied border border-status-applied/20 shrink-0">
+                  Dev
+                </span>
+              </>
+            )}
           </div>
+        </div>
+      )}
+
+      {/* Drag Handle on Desktop (Hidden when collapsed or on mobile) */}
+      {!isCollapsed && !onCloseMobile && (
+        <div
+          onMouseDown={handleMouseDown}
+          onDoubleClick={() => {
+            onWidthChange?.(260);
+            onWidthCommit?.(260);
+          }}
+          className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-primary/40 transition-colors z-20 flex items-center justify-center group"
+          title="Drag to resize sidebar width (double-click to reset)"
+        >
+          <div className="w-0.5 h-8 bg-outline-variant/60 rounded-full group-hover:bg-primary transition-colors" />
         </div>
       )}
     </aside>

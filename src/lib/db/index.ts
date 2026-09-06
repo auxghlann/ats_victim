@@ -23,6 +23,16 @@ export function getDatabase(): Database.Database {
       const schemaSql = fs.readFileSync(schemaPath, "utf-8");
       db.exec(schemaSql);
     }
+
+    // Incremental column migrations
+    try {
+      const appCols = (db.prepare("PRAGMA table_info(applications)").all() as { name: string }[]).map((c) => c.name);
+      if (appCols.length > 0 && !appCols.includes("work_setup")) {
+        db.exec("ALTER TABLE applications ADD COLUMN work_setup TEXT CHECK (work_setup IN ('remote', 'hybrid', 'on-site'))");
+      }
+    } catch {
+      // Table may not exist yet
+    }
     
     globalForDb.sqliteDb = db;
   }

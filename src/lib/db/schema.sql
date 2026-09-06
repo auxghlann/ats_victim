@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS applications (
     job_title TEXT NOT NULL,
     status TEXT NOT NULL CHECK (status IN ('applied', 'viewed', 'interview', 'accepted', 'rejected')),
     location TEXT,
+    work_setup TEXT CHECK (work_setup IN ('remote', 'hybrid', 'on-site')),
     salary_min REAL,
     salary_max REAL,
     salary_currency TEXT DEFAULT 'USD',

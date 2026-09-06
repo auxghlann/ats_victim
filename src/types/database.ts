@@ -35,6 +35,8 @@ export interface UserIntegration {
   created_at?: string;
 }
 
+export type WorkSetup = "remote" | "hybrid" | "on-site";
+
 export interface Application {
   id: string;
   user_id: string;
@@ -42,6 +44,7 @@ export interface Application {
   job_title: string;
   status: ApplicationStatus;
   location?: string | null;
+  work_setup?: WorkSetup | null;
   salary_min?: number | null;
   salary_max?: number | null;
   salary_currency?: string;

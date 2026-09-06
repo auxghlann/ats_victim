@@ -50,3 +50,5 @@ next-env.d.ts
 # local agent specific files
 .agents/
 .spec/
+
+.playwright-mcp/
