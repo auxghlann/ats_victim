@@ -9,63 +9,33 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-let cachedSidebarWidth = 260;
-let cachedIsCollapsed = false;
-let hasLoadedFromStorage = false;
+const DEFAULT_SIDEBAR_WIDTH = 260;
 
 export function AppLayout({ user, children }: AppLayoutProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState<number>(() => cachedSidebarWidth);
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => cachedIsCollapsed);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(DEFAULT_SIDEBAR_WIDTH);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
+  // Clean up any previously persisted keys so localStorage is not used
   useEffect(() => {
-    if (hasLoadedFromStorage) return;
-    const frame = requestAnimationFrame(() => {
-      try {
-        const savedWidth = localStorage.getItem("ats_sidebar_width");
-        if (savedWidth) {
-          const parsed = parseInt(savedWidth, 10);
-          if (!isNaN(parsed) && parsed >= 200 && parsed <= 420) {
-            cachedSidebarWidth = parsed;
-            setSidebarWidth(parsed);
-          }
-        }
-        const savedCollapsed = localStorage.getItem("ats_sidebar_collapsed");
-        if (savedCollapsed !== null) {
-          const collapsed = savedCollapsed === "true";
-          cachedIsCollapsed = collapsed;
-          setIsCollapsed(collapsed);
-        }
-        hasLoadedFromStorage = true;
-      } catch {
-        // Ignore potential localStorage errors
-      }
-    });
-    return () => cancelAnimationFrame(frame);
+    try {
+      localStorage.removeItem("ats_sidebar_width");
+      localStorage.removeItem("ats_sidebar_collapsed");
+    } catch {
+      // Ignore storage access issues
+    }
   }, []);
 
   const handleToggleCollapse = () => {
-    setIsCollapsed((prev) => {
-      const next = !prev;
-      cachedIsCollapsed = next;
-      try {
-        localStorage.setItem("ats_sidebar_collapsed", String(next));
-      } catch {}
-      return next;
-    });
+    setIsCollapsed((prev) => !prev);
   };
 
   const handleWidthChange = (newWidth: number) => {
-    cachedSidebarWidth = newWidth;
     setSidebarWidth(newWidth);
   };
 
   const handleWidthCommit = (finalWidth: number) => {
-    cachedSidebarWidth = finalWidth;
     setSidebarWidth(finalWidth);
-    try {
-      localStorage.setItem("ats_sidebar_width", String(finalWidth));
-    } catch {}
   };
 
   return (
