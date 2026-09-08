@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
 import { applicationsService } from "@/lib/services/applicationsService";
-import { JobDetailView } from "@/components/tracker/JobDetailView";
-import { Task } from "@/types/database";
+import { JobDetailView } from "@/components/tracker/detail/JobDetailView";
 
 export const dynamic = "force-dynamic";
 
@@ -39,13 +38,10 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
     );
   }
 
-  const tasks = (await applicationsService.getApplicationTasks(userId, id)) as Task[];
-
   return (
     <JobDetailView
       application={result.application}
       detail={result.detail}
-      initialTasks={tasks || []}
     />
   );
 }

@@ -9,11 +9,8 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-const DEFAULT_SIDEBAR_WIDTH = 260;
-
 export function AppLayout({ user, children }: AppLayoutProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState<number>(DEFAULT_SIDEBAR_WIDTH);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
   // Clean up any previously persisted keys so localStorage is not used
@@ -30,25 +27,14 @@ export function AppLayout({ user, children }: AppLayoutProps) {
     setIsCollapsed((prev) => !prev);
   };
 
-  const handleWidthChange = (newWidth: number) => {
-    setSidebarWidth(newWidth);
-  };
-
-  const handleWidthCommit = (finalWidth: number) => {
-    setSidebarWidth(finalWidth);
-  };
-
   return (
     <div className="min-h-screen bg-background text-on-surface flex w-full">
       {/* Desktop Persistent Sidebar (Sticky Flex Column) */}
       <div className="hidden md:block shrink-0">
         <SideNavBar
           user={user}
-          width={sidebarWidth}
           isCollapsed={isCollapsed}
           onToggleCollapse={handleToggleCollapse}
-          onWidthChange={handleWidthChange}
-          onWidthCommit={handleWidthCommit}
         />
       </div>
 

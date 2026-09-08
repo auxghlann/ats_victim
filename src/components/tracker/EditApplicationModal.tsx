@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Application, ApplicationStatus, WorkSetup } from "@/types/database";
-import { updateApplicationAction } from "@/app/actions/applications";
+import { updateApplicationAction } from "@/app/actions/applicationsAction";
 
 interface EditApplicationModalProps {
   application: Application | null;

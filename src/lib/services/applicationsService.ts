@@ -1,7 +1,11 @@
 import { applicationsRepository, ListApplicationsOptions } from "@/lib/repositories/applicationsRepository";
 import { applicationDetailsRepository } from "@/lib/repositories/applicationDetailsRepository";
-import { getDatabase } from "@/lib/db";
-import { Application, ApplicationDetail, ApplicationStatus, WorkSetup } from "@/types/database";
+import {
+  Application,
+  ApplicationDetail,
+  ApplicationStatus,
+  WorkSetup,
+} from "@/types/database";
 
 export interface CreateApplicationInput {
   company_name: string;
@@ -15,7 +19,6 @@ export interface CreateApplicationInput {
   job_description?: string;
   notes?: string;
 }
-
 
 export async function listApplications(
   userId: string,
@@ -109,80 +112,6 @@ export async function updateStatus(
   return updated;
 }
 
-export async function deleteApplication(userId: string, applicationId: string): Promise<boolean> {
-  if (!userId || !applicationId) throw new Error("User ID and Application ID are required");
-
-  const deleted = applicationsRepository.deleteApplication(userId, applicationId);
-  if (!deleted) throw new Error("Application not found or already deleted");
-  return true;
-}
-
-export async function getDashboardMetrics(userId: string) {
-  if (!userId) throw new Error("User ID is required");
-
-  const counts = applicationsRepository.getStatusCounts(userId);
-  const recent = applicationsRepository.listApplications(userId, {
-    pageSize: 5,
-    sortBy: "last_activity_date",
-    sortOrder: "desc",
-  });
-
-  return {
-    counts,
-    recentApplications: recent.items,
-  };
-}
-
-export async function getApplicationTasks(userId: string, applicationId: string) {
-  if (!userId || !applicationId) throw new Error("User ID and Application ID are required");
-  const sql = `SELECT * FROM tasks WHERE user_id = ? AND application_id = ? ORDER BY created_at ASC`;
-  return getDatabase().prepare(sql).all(userId, applicationId);
-}
-
-export async function toggleTask(userId: string, taskId: string, completed: boolean) {
-  if (!userId || !taskId) throw new Error("User ID and Task ID are required");
-  const sql = `UPDATE tasks SET completed = ? WHERE user_id = ? AND id = ? RETURNING *`;
-  return getDatabase().prepare(sql).get(completed ? 1 : 0, userId, taskId);
-}
-
-export async function createTask(userId: string, applicationId: string, title: string) {
-  if (!userId || !applicationId || !title.trim()) throw new Error("Missing task requirements");
-  const id = `task-${crypto.randomUUID()}`;
-  const now = new Date().toISOString();
-  const sql = `
-    INSERT INTO tasks (id, user_id, application_id, title, completed, priority, created_at)
-    VALUES (?, ?, ?, ?, 0, 'medium', ?)
-    RETURNING *
-  `;
-  return getDatabase().prepare(sql).get(id, userId, applicationId, title.trim(), now);
-}
-
-export async function addNote(userId: string, applicationId: string, content: string) {
-  if (!userId || !applicationId || !content.trim()) throw new Error("Missing note parameters");
-  const detail = applicationDetailsRepository.getApplicationDetails(applicationId);
-
-  let notesList: { id: string; date: string; content: string }[] = [];
-  if (detail?.notes) {
-    try {
-      const parsed = JSON.parse(detail.notes);
-      notesList = Array.isArray(parsed) ? parsed : [{ id: "note-1", date: "Initial Note", content: detail.notes }];
-    } catch {
-      notesList = [{ id: "note-1", date: "Initial Note", content: detail.notes }];
-    }
-  }
-
-  const newNote = {
-    id: `note-${Date.now()}`,
-    date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-    content: content.trim(),
-  };
-
-  notesList.unshift(newNote);
-  return applicationDetailsRepository.upsertApplicationDetails(applicationId, {
-    notes: JSON.stringify(notesList),
-  });
-}
-
 export async function updateApplication(
   userId: string,
   applicationId: string,
@@ -194,15 +123,12 @@ export async function updateApplication(
   return updated;
 }
 
-export async function updateJobDescription(
-  userId: string,
-  applicationId: string,
-  description: string
-) {
+export async function deleteApplication(userId: string, applicationId: string): Promise<boolean> {
   if (!userId || !applicationId) throw new Error("User ID and Application ID are required");
-  return applicationDetailsRepository.upsertApplicationDetails(applicationId, {
-    job_description: description,
-  });
+
+  const deleted = applicationsRepository.deleteApplication(userId, applicationId);
+  if (!deleted) throw new Error("Application not found or already deleted");
+  return true;
 }
 
 export const applicationsService = {
@@ -211,12 +137,5 @@ export const applicationsService = {
   createApplication,
   updateApplication,
   updateStatus,
-  updateJobDescription,
   deleteApplication,
-  getDashboardMetrics,
-  getApplicationTasks,
-  toggleTask,
-  createTask,
-  addNote,
 };
-

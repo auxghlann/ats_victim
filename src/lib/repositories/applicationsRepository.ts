@@ -224,6 +224,16 @@ export function getStatusCounts(userId: string): Record<string, number> {
   return counts;
 }
 
+export function getActivityCountByDate(userId: string, dateStr: string): number {
+  const sql = `
+    SELECT COUNT(*) as count 
+    FROM applications 
+    WHERE user_id = ? AND (date_applied = ? OR last_activity_date = ?)
+  `;
+  const row = getDatabase().prepare(sql).get(userId, dateStr, dateStr) as { count: number } | undefined;
+  return row ? row.count : 0;
+}
+
 export const applicationsRepository = {
   listApplications,
   getApplicationById,
@@ -231,4 +241,5 @@ export const applicationsRepository = {
   updateApplication,
   deleteApplication,
   getStatusCounts,
+  getActivityCountByDate,
 };

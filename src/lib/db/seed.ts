@@ -264,6 +264,33 @@ Netflix offers candid feedback, high context with low control, and stunning coll
       completed: 0,
       priority: "high",
     },
+    {
+      id: "task-004",
+      user_id: "dev-user-001",
+      application_id: "app-meta-003",
+      title: "Review behavioral STAR stories and past technical failures",
+      due_date: "2026-09-15",
+      completed: 0,
+      priority: "medium",
+    },
+    {
+      id: "task-005",
+      user_id: "dev-user-001",
+      application_id: null,
+      title: "Update LinkedIn headline with AI Engineer portfolio link",
+      due_date: null,
+      completed: 0,
+      priority: "low",
+    },
+    {
+      id: "task-006",
+      user_id: "dev-user-001",
+      application_id: "app-google-001",
+      title: "Submit signed NDA to Google staffing coordinator",
+      due_date: "2026-09-05",
+      completed: 1,
+      priority: "high",
+    },
   ];
 
   const insertTask = db.prepare(`
@@ -298,6 +325,24 @@ Netflix offers candid feedback, high context with low control, and stunning coll
       meeting_link: "https://meet.google.com/xyz-uvw-rst",
       notes: "Discuss team matching and location preferences.",
     },
+    {
+      id: "interview-003",
+      user_id: "dev-user-001",
+      application_id: "app-stripe-002",
+      round_name: "Hiring Manager & Systems Architecture",
+      scheduled_at: "2026-09-18T18:00:00Z",
+      meeting_link: "https://zoom.us/j/987654321",
+      notes: "Deep dive into financial reconciliation reliability.",
+    },
+    {
+      id: "interview-004",
+      user_id: "dev-user-001",
+      application_id: "app-openai-004",
+      round_name: "Final Leadership & Values Discussion",
+      scheduled_at: "2026-09-22T20:00:00Z",
+      meeting_link: "https://meet.google.com/oai-lead-fit",
+      notes: "Discussion with VP of Engineering.",
+    },
   ];
 
   const insertInterview = db.prepare(`
@@ -312,7 +357,8 @@ Netflix offers candid feedback, high context with low control, and stunning coll
     insertInterview.run(interview);
   }
 
-  console.log("Database seeded successfully with 5 applications, 3 tasks, and 2 interviews.");
+  console.log("Database seeded successfully with 5 applications, 6 tasks, and 4 interviews.");
+
 }
 
 // Allow direct CLI execution: `npx tsx src/lib/db/seed.ts`

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ApplicationStatus } from "@/types/database";
-import { createApplicationAction } from "@/app/actions/applications";
+import { createApplicationAction } from "@/app/actions/applicationsAction";
 
 interface AddApplicationModalProps {
   isOpen: boolean;

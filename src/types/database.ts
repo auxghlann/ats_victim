@@ -101,3 +101,15 @@ export interface Interview {
   notes?: string | null;
   created_at?: string;
 }
+
+export interface EnrichedTask extends Task {
+  company_name?: string | null;
+  job_title?: string | null;
+}
+
+export interface EnrichedInterview extends Interview {
+  company_name?: string | null;
+  job_title?: string | null;
+  status?: ApplicationStatus | null;
+}
+
