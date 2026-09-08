@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { User } from "@/types/database";
@@ -8,24 +8,17 @@ import { User } from "@/types/database";
 interface SideNavBarProps {
   user: User | null;
   onCloseMobile?: () => void;
-  width?: number;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
-  onWidthChange?: (newWidth: number) => void;
-  onWidthCommit?: (newWidth: number) => void;
 }
 
 export function SideNavBar({
   user,
   onCloseMobile,
-  width = 260,
   isCollapsed = false,
   onToggleCollapse,
-  onWidthChange,
-  onWidthCommit,
 }: SideNavBarProps) {
   const pathname = usePathname();
-  const [isResizing, setIsResizing] = useState(false);
 
   const navItems = [
     { label: "Dashboard", href: "/", icon: "dashboard" },
@@ -39,42 +32,12 @@ export function SideNavBar({
     return pathname.startsWith(href);
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-    const startX = e.clientX;
-    const startWidth = width;
-    let latestWidth = startWidth;
-
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const delta = moveEvent.clientX - startX;
-      latestWidth = Math.max(200, Math.min(420, startWidth + delta));
-      onWidthChange?.(latestWidth);
-    };
-
-    const handleMouseUp = () => {
-      setIsResizing(false);
-      onWidthCommit?.(latestWidth);
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    };
-
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-  };
-
-  const effectiveWidth = isCollapsed ? 72 : width;
+  const effectiveWidth = isCollapsed ? 72 : 260;
 
   return (
     <aside
       style={{ width: `${effectiveWidth}px` }}
-      className={`h-screen flex-col sticky top-0 bg-surface-container border-r border-outline-variant/40 z-30 flex py-6 select-none shrink-0 relative group/sidebar ${
-        isResizing ? "transition-none" : "transition-[width] duration-200 ease-in-out"
-      }`}
+      className="h-screen flex-col sticky top-0 bg-surface-container border-r border-outline-variant/40 z-30 flex py-6 select-none shrink-0 relative transition-[width] duration-200 ease-in-out"
     >
       {/* Brand Header & Retraction Button */}
       <div className={`px-4 mb-8 flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
@@ -196,21 +159,6 @@ export function SideNavBar({
               </>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Drag Handle on Desktop (Hidden when collapsed or on mobile) */}
-      {!isCollapsed && !onCloseMobile && (
-        <div
-          onMouseDown={handleMouseDown}
-          onDoubleClick={() => {
-            onWidthChange?.(260);
-            onWidthCommit?.(260);
-          }}
-          className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-primary/40 transition-colors z-20 flex items-center justify-center group"
-          title="Drag to resize sidebar width (double-click to reset)"
-        >
-          <div className="w-0.5 h-8 bg-outline-variant/60 rounded-full group-hover:bg-primary transition-colors" />
         </div>
       )}
     </aside>
