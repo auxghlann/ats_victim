@@ -34,7 +34,7 @@ export function JobDescriptionSection({
   };
 
   return (
-    <div className="p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-xs space-y-4">
+    <div className="p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-sm space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-bold text-on-surface">Job Description</h2>
         <div className="flex items-center gap-2">
@@ -60,8 +60,15 @@ export function JobDescriptionSection({
                 setIsEditing(true);
               }
             }}
-            className="px-2.5 py-1 rounded-lg border border-outline-variant text-[11px] font-semibold text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
+            className={
+              isEditing
+                ? "px-3 py-1 rounded-full text-xs font-bold text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer flex items-center gap-1"
+                : "px-3 py-1 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+            }
           >
+            <span className="material-symbols-outlined text-sm">
+              {isEditing ? "close" : "edit"}
+            </span>
             {isEditing ? "Cancel" : "Edit"}
           </button>
         </div>
@@ -73,23 +80,27 @@ export function JobDescriptionSection({
             rows={10}
             value={descriptionDraft}
             onChange={(e) => setDescriptionDraft(e.target.value)}
-            className="w-full p-3 rounded-xl bg-surface-container-low border border-outline-variant/50 text-xs text-on-surface focus:outline-none focus:border-primary font-mono leading-relaxed resize-y"
+            className="w-full p-3 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary font-mono leading-relaxed resize-y transition-all"
             placeholder="Paste or edit the full job description (markdown supported)..."
           />
           <div className="flex justify-end gap-2">
             <button
               type="button"
               onClick={() => setIsEditing(false)}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-on-surface-variant hover:bg-surface-container cursor-pointer"
+              className="px-3.5 py-1.5 rounded-full text-xs font-bold text-on-surface-variant hover:bg-surface-container cursor-pointer flex items-center gap-1"
             >
+              <span className="material-symbols-outlined text-sm">close</span>
               Cancel
             </button>
             <button
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="px-4 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer"
+              className="px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer flex items-center gap-1 shadow-sm"
             >
+              <span className="material-symbols-outlined text-sm font-bold">
+                {isSaving ? "hourglass_empty" : "check"}
+              </span>
               {isSaving ? "Saving..." : "Save Description"}
             </button>
           </div>

@@ -7,7 +7,7 @@ interface RecentApplicationsCardProps {
 
 export function RecentApplicationsCard({ applications }: RecentApplicationsCardProps) {
   return (
-    <div className="bg-surface p-6 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between">
+    <div className="bg-surface p-6 rounded-2xl border border-outline-variant/40 shadow-sm flex flex-col justify-between">
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-base font-bold text-on-surface">Recent Applications</h2>
@@ -55,8 +55,9 @@ export function RecentApplicationsCard({ applications }: RecentApplicationsCardP
       <div className="pt-4 mt-4 border-t border-outline-variant/20">
         <Link
           href="/tracker"
-          className="w-full block py-2.5 text-center text-xs font-semibold text-primary border border-outline-variant/50 rounded-xl hover:bg-primary/5 transition-colors"
+          className="w-full py-2.5 text-center text-xs font-bold text-on-primary bg-primary rounded-full hover:bg-primary/90 transition-all flex items-center justify-center gap-1.5 shadow-sm"
         >
+          <span className="material-symbols-outlined text-base">table_chart</span>
           View All Applications
         </Link>
       </div>

@@ -65,7 +65,7 @@ export function CalendarGrid({
   });
 
   return (
-    <div className="bg-surface rounded-2xl border border-outline-variant/40 shadow-xs overflow-hidden">
+    <div className="bg-surface rounded-2xl border border-outline-variant/40 shadow-sm overflow-hidden">
       {/* Header bar with Subtitle & Active Rounds counter */}
       <div className="p-4 border-b border-outline-variant/30 flex items-center justify-between">
         <h2 className="text-base font-bold text-on-surface">

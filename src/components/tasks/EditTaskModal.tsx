@@ -1,43 +1,63 @@
 "use client";
 
-import { Application, TaskPriority } from "@/types/database";
+import { useState } from "react";
+import { Application, EnrichedTask, TaskPriority } from "@/types/database";
+
+export interface EditTaskData {
+  title: string;
+  applicationId: string | null;
+  priority: TaskPriority;
+  dueDate: string | null;
+}
 
 interface EditTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (e: React.FormEvent) => void;
+  task: EnrichedTask;
   applications: Application[];
-  title: string;
-  onTitleChange: (val: string) => void;
-  applicationId: string;
-  onApplicationIdChange: (val: string) => void;
-  priority: TaskPriority;
-  onPriorityChange: (val: TaskPriority) => void;
-  dueDate: string;
-  onDueDateChange: (val: string) => void;
+  onSubmit: (data: EditTaskData) => Promise<void>;
   isSubmitting: boolean;
 }
 
 export function EditTaskModal({
   isOpen,
   onClose,
-  onSubmit,
+  task,
   applications,
-  title,
-  onTitleChange,
-  applicationId,
-  onApplicationIdChange,
-  priority,
-  onPriorityChange,
-  dueDate,
-  onDueDateChange,
+  onSubmit,
   isSubmitting,
 }: EditTaskModalProps) {
+  const [title, setTitle] = useState(task.title || "");
+  const [applicationId, setApplicationId] = useState(task.application_id || "");
+  const [priority, setPriority] = useState<TaskPriority>((task.priority as TaskPriority) || "medium");
+  const [dueDate, setDueDate] = useState(task.due_date || "");
+
+  const [prevTask, setPrevTask] = useState(task);
+  if (task && task !== prevTask) {
+    setPrevTask(task);
+    setTitle(task.title || "");
+    setApplicationId(task.application_id || "");
+    setPriority((task.priority as TaskPriority) || "medium");
+    setDueDate(task.due_date || "");
+  }
+
   if (!isOpen) return null;
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim() || isSubmitting) return;
+
+    await onSubmit({
+      title: title.trim(),
+      applicationId: applicationId || null,
+      priority,
+      dueDate: dueDate || null,
+    });
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-      <div className="bg-surface rounded-2xl border border-outline-variant/40 shadow-xl max-w-md w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 transition-opacity">
+      <div className="bg-surface rounded-2xl border border-outline-variant/40 shadow-2xl max-w-md w-full p-6 space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
@@ -57,18 +77,18 @@ export function EditTaskModal({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-on-surface mb-1.5">
-              Task Title <span className="text-error">*</span>
+              Task Title <span className="text-status-rejected">*</span>
             </label>
             <input
               type="text"
               required
               value={title}
-              onChange={(e) => onTitleChange(e.target.value)}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Follow-up email"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/50 text-xs text-on-surface focus:outline-none focus:border-primary"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             />
           </div>
 
@@ -78,8 +98,8 @@ export function EditTaskModal({
             </label>
             <select
               value={applicationId}
-              onChange={(e) => onApplicationIdChange(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/50 text-xs text-on-surface focus:outline-none focus:border-primary cursor-pointer"
+              onChange={(e) => setApplicationId(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer"
             >
               <option value="">None (General Task)</option>
               {applications.map((app) => (
@@ -95,8 +115,8 @@ export function EditTaskModal({
               <label className="block text-xs font-bold text-on-surface mb-1.5">Priority</label>
               <select
                 value={priority}
-                onChange={(e) => onPriorityChange(e.target.value as TaskPriority)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/50 text-xs text-on-surface focus:outline-none focus:border-primary cursor-pointer"
+                onChange={(e) => setPriority(e.target.value as TaskPriority)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -109,8 +129,8 @@ export function EditTaskModal({
               <input
                 type="date"
                 value={dueDate}
-                onChange={(e) => onDueDateChange(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/50 text-xs text-on-surface focus:outline-none focus:border-primary"
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all"
               />
             </div>
           </div>
@@ -119,15 +139,19 @@ export function EditTaskModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-full text-xs font-bold text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer flex items-center gap-1.5"
             >
+              <span className="material-symbols-outlined text-sm">close</span>
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !title.trim()}
-              className="px-5 py-2 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-5 py-2 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
             >
+              <span className="material-symbols-outlined text-sm font-bold">
+                {isSubmitting ? "hourglass_empty" : "check"}
+              </span>
               {isSubmitting ? "Saving..." : "Save Changes"}
             </button>
           </div>

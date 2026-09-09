@@ -51,7 +51,9 @@ export function TrackerTableHeader({
                   } ${col.align === "center" ? "justify-center" : "justify-start"}`}
                   onClick={() => {
                     if (isResizingRef.current) return;
-                    col.sortKey && onToggleSort(col.sortKey);
+                    if (col.sortKey) {
+                      onToggleSort(col.sortKey);
+                    }
                   }}
                 >
                   <span className="truncate">{col.label}</span>

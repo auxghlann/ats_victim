@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Application, EnrichedTask, TaskPriority } from "@/types/database";
+import { Application, EnrichedTask } from "@/types/database";
 import {
   toggleTaskAction,
   createTaskAction,
@@ -29,19 +29,11 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
 
   // New Task Modal State
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
-  const [modalTitle, setModalTitle] = useState("");
-  const [modalAppId, setModalAppId] = useState<string>("");
-  const [modalPriority, setModalPriority] = useState<TaskPriority>("medium");
-  const [modalDueDate, setModalDueDate] = useState("");
   const [isCreatingTask, setIsCreatingTask] = useState(false);
 
   // Edit Task Modal State
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTask, setEditingTask] = useState<EnrichedTask | null>(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editAppId, setEditAppId] = useState<string>("");
-  const [editPriority, setEditPriority] = useState<TaskPriority>("medium");
-  const [editDueDate, setEditDueDate] = useState("");
   const [isUpdatingTask, setIsUpdatingTask] = useState(false);
 
   // Toggle Database Task
@@ -63,29 +55,24 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
   // Open Edit Modal
   const handleOpenEdit = (task: EnrichedTask) => {
     setEditingTask(task);
-    setEditTitle(task.title);
-    setEditAppId(task.application_id || "");
-    setEditPriority((task.priority as TaskPriority) || "medium");
-    setEditDueDate(task.due_date || "");
     setShowEditModal(true);
   };
 
   // Save Edit Task
-  const handleSaveEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingTask || !editTitle.trim() || isUpdatingTask) return;
+  const handleSaveEdit = async (data: import("./EditTaskModal").EditTaskData) => {
+    if (!editingTask || isUpdatingTask) return;
 
     setIsUpdatingTask(true);
     try {
       const updated = await updateTaskAction(editingTask.id, {
-        title: editTitle.trim(),
-        applicationId: editAppId || null,
-        priority: editPriority,
-        dueDate: editDueDate || null,
+        title: data.title,
+        applicationId: data.applicationId,
+        priority: data.priority,
+        dueDate: data.dueDate,
       });
 
       if (updated) {
-        const matchedApp = applications.find((a) => a.id === editAppId);
+        const matchedApp = applications.find((a) => a.id === data.applicationId);
         const enriched: EnrichedTask = {
           ...updated,
           company_name: matchedApp?.company_name || null,
@@ -130,20 +117,19 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
   };
 
   // Create Task via Modal
-  const handleCreateTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!modalTitle.trim() || isCreatingTask) return;
+  const handleCreateTask = async (data: import("./CreateTaskModal").CreateTaskData) => {
+    if (isCreatingTask) return;
 
     setIsCreatingTask(true);
     try {
       const created = await createTaskAction(
-        modalAppId || null,
-        modalTitle.trim(),
-        modalPriority,
-        modalDueDate || null
+        data.applicationId,
+        data.title,
+        data.priority,
+        data.dueDate
       );
       if (created) {
-        const matchedApp = applications.find((a) => a.id === modalAppId);
+        const matchedApp = applications.find((a) => a.id === data.applicationId);
         const enriched: EnrichedTask = {
           ...created,
           company_name: matchedApp?.company_name || null,
@@ -151,10 +137,6 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
         };
         setTasks((prev) => [enriched, ...prev]);
         setShowNewTaskModal(false);
-        setModalTitle("");
-        setModalAppId("");
-        setModalPriority("medium");
-        setModalDueDate("");
       }
     } finally {
       setIsCreatingTask(false);
@@ -192,7 +174,7 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
         <button
           type="button"
           onClick={() => setShowNewTaskModal(true)}
-          className="px-5 py-2.5 rounded-full bg-primary text-on-primary text-xs font-semibold hover:bg-primary/90 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+          className="px-5 py-2.5 rounded-full bg-primary text-on-primary text-xs font-semibold hover:bg-primary/90 transition-all shadow-sm hover:shadow-md flex items-center gap-2 cursor-pointer"
         >
           <span className="material-symbols-outlined text-base">add</span>
           New Task
@@ -263,36 +245,24 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
         onClose={() => setShowNewTaskModal(false)}
         onSubmit={handleCreateTask}
         applications={applications}
-        title={modalTitle}
-        onTitleChange={setModalTitle}
-        applicationId={modalAppId}
-        onApplicationIdChange={setModalAppId}
-        priority={modalPriority}
-        onPriorityChange={setModalPriority}
-        dueDate={modalDueDate}
-        onDueDateChange={setModalDueDate}
         isSubmitting={isCreatingTask}
       />
 
       {/* Edit Task Modal */}
-      <EditTaskModal
-        isOpen={showEditModal}
-        onClose={() => {
-          setShowEditModal(false);
-          setEditingTask(null);
-        }}
-        onSubmit={handleSaveEdit}
-        applications={applications}
-        title={editTitle}
-        onTitleChange={setEditTitle}
-        applicationId={editAppId}
-        onApplicationIdChange={setEditAppId}
-        priority={editPriority}
-        onPriorityChange={setEditPriority}
-        dueDate={editDueDate}
-        onDueDateChange={setEditDueDate}
-        isSubmitting={isUpdatingTask}
-      />
+      {editingTask && (
+        <EditTaskModal
+          key={editingTask.id}
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingTask(null);
+          }}
+          task={editingTask}
+          onSubmit={handleSaveEdit}
+          applications={applications}
+          isSubmitting={isUpdatingTask}
+        />
+      )}
     </div>
   );
 }

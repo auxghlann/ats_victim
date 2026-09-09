@@ -20,7 +20,7 @@ export function EditApplicationModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState(() => ({
+  const [formData, setFormData] = useState({
     company_name: application?.company_name || "",
     job_title: application?.job_title || "",
     status: (application?.status || "applied") as ApplicationStatus,
@@ -28,7 +28,22 @@ export function EditApplicationModal({
     work_setup: ((application?.work_setup as WorkSetup) || "remote") as WorkSetup,
     salary_min: application?.salary_min ? String(application?.salary_min) : "",
     salary_max: application?.salary_max ? String(application?.salary_max) : "",
-  }));
+  });
+
+  const [prevApp, setPrevApp] = useState(application);
+  if (application && application !== prevApp) {
+    setPrevApp(application);
+    setFormData({
+      company_name: application.company_name || "",
+      job_title: application.job_title || "",
+      status: (application.status || "applied") as ApplicationStatus,
+      location: application.location || "",
+      work_setup: ((application.work_setup as WorkSetup) || "remote") as WorkSetup,
+      salary_min: application.salary_min ? String(application.salary_min) : "",
+      salary_max: application.salary_max ? String(application.salary_max) : "",
+    });
+    setError(null);
+  }
 
   if (!isOpen || !application) return null;
 
@@ -66,12 +81,12 @@ export function EditApplicationModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-black/50 transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal Dialog */}
-      <div className="relative z-10 w-full max-w-2xl bg-surface rounded-3xl border border-outline-variant/40 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-fade-in">
+      <div className="relative z-10 w-full max-w-2xl bg-surface rounded-3xl border border-outline-variant/40 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="px-6 py-5 border-b border-outline-variant/30 flex items-center justify-between bg-surface-container/50">
           <div className="flex items-center gap-3">
@@ -115,7 +130,7 @@ export function EditApplicationModal({
                 required
                 value={formData.company_name}
                 onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all"
               />
             </div>
             <div>
@@ -127,7 +142,7 @@ export function EditApplicationModal({
                 required
                 value={formData.job_title}
                 onChange={(e) => setFormData({ ...formData, job_title: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all"
               />
             </div>
           </div>
@@ -143,7 +158,7 @@ export function EditApplicationModal({
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value as ApplicationStatus })
                 }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all capitalize"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all capitalize"
               >
                 <option value="applied">Applied</option>
                 <option value="viewed">Viewed</option>
@@ -161,7 +176,7 @@ export function EditApplicationModal({
                 onChange={(e) =>
                   setFormData({ ...formData, work_setup: e.target.value as WorkSetup })
                 }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all capitalize"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all capitalize"
               >
                 <option value="remote">Remote</option>
                 <option value="hybrid">Hybrid</option>
@@ -180,7 +195,7 @@ export function EditApplicationModal({
               placeholder="e.g. San Francisco, CA or Remote"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             />
           </div>
 
@@ -195,7 +210,7 @@ export function EditApplicationModal({
                 placeholder="120000"
                 value={formData.salary_min}
                 onChange={(e) => setFormData({ ...formData, salary_min: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all"
               />
             </div>
             <div>
@@ -207,7 +222,7 @@ export function EditApplicationModal({
                 placeholder="160000"
                 value={formData.salary_max}
                 onChange={(e) => setFormData({ ...formData, salary_max: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all"
               />
             </div>
           </div>
@@ -217,17 +232,20 @@ export function EditApplicationModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-on-surface-variant hover:bg-surface-variant transition-colors"
+              className="px-4 py-2 rounded-full text-xs font-bold text-on-surface-variant hover:bg-surface-variant transition-colors flex items-center gap-1.5"
             >
+              <span className="material-symbols-outlined text-sm">close</span>
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 rounded-xl bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container transition-all shadow-xs disabled:opacity-50 flex items-center gap-2"
+              className="px-5 py-2 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 transition-all shadow-xs disabled:opacity-50 flex items-center gap-1.5"
             >
-              {loading && (
+              {loading ? (
                 <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <span className="material-symbols-outlined text-sm font-bold">check</span>
               )}
               Save Changes
             </button>

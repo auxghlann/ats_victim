@@ -51,15 +51,15 @@ export function JobNotesSection({
   };
 
   return (
-    <div className="p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-xs space-y-4">
+    <div className="p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-sm space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-bold text-on-surface">Notes &amp; Preparation</h2>
         <button
           type="button"
           onClick={() => setShowAddNote(!showAddNote)}
-          className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+          className="px-3 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 transition-all flex items-center gap-1 shadow-sm cursor-pointer"
         >
-          <span className="material-symbols-outlined text-sm">add</span>
+          <span className="material-symbols-outlined text-sm font-bold">add</span>
           Add Note
         </button>
       </div>
@@ -71,7 +71,7 @@ export function JobNotesSection({
             value={newNoteContent}
             onChange={(e) => setNewNoteContent(e.target.value)}
             placeholder="Log interview feedback, salary insights, or follow-up notes..."
-            className="w-full p-2.5 rounded-lg bg-surface border border-outline-variant/50 text-xs text-on-surface focus:outline-none focus:border-primary resize-none"
+            className="w-full p-2.5 rounded-lg bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all resize-none"
           />
           <div className="flex justify-end gap-2">
             <button
@@ -80,16 +80,18 @@ export function JobNotesSection({
                 setShowAddNote(false);
                 setNewNoteContent("");
               }}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-on-surface-variant hover:bg-surface-container cursor-pointer"
+              className="px-3.5 py-1.5 rounded-full text-xs font-bold text-on-surface-variant hover:bg-surface-container cursor-pointer flex items-center gap-1"
             >
+              <span className="material-symbols-outlined text-sm">close</span>
               Cancel
             </button>
             <button
               type="button"
               onClick={handleAddNote}
               disabled={isSavingNote || !newNoteContent.trim()}
-              className="px-4 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer"
+              className="px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer flex items-center gap-1 shadow-sm"
             >
+              <span className="material-symbols-outlined text-sm font-bold">{isSavingNote ? "hourglass_empty" : "check"}</span>
               {isSavingNote ? "Saving..." : "Save Note"}
             </button>
           </div>

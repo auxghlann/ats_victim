@@ -115,10 +115,13 @@ export function TrackerTableRow({
       </td>
 
       {/* 7. Actions Menu */}
-      <td className="px-2 py-3.5 text-center relative">
+      <td className={`px-2 py-3.5 text-center ${isMenuOpen ? "relative z-30" : "relative"}`}>
         <button
           type="button"
-          onClick={() => onToggleActionMenu(app.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleActionMenu(app.id);
+          }}
           className="w-7 h-7 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container flex items-center justify-center transition-colors mx-auto cursor-pointer"
           title="Actions"
         >
@@ -128,10 +131,18 @@ export function TrackerTableRow({
         {isMenuOpen && (
           <>
             <div
-              className="fixed inset-0 z-20"
-              onClick={() => onToggleActionMenu(app.id)}
+              data-no-row-click
+              className="fixed inset-0 z-20 cursor-default"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleActionMenu(app.id);
+              }}
             />
-            <div className="absolute right-2 top-11 z-30 w-36 py-1.5 rounded-xl bg-surface border border-outline-variant/40 shadow-lg animate-in fade-in zoom-in-95 duration-100 text-left">
+            <div
+              data-no-row-click
+              onClick={(e) => e.stopPropagation()}
+              className="absolute right-2 top-10 z-30 w-36 py-1.5 rounded-xl bg-surface border border-outline-variant/40 shadow-lg animate-in fade-in zoom-in-95 duration-100 text-left"
+            >
               <Link
                 href={`/tracker/${app.id}`}
                 className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-on-surface hover:bg-surface-container transition-colors"
@@ -144,7 +155,8 @@ export function TrackerTableRow({
               </Link>
               <button
                 type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   onToggleActionMenu(app.id);
                   onEdit(app);
                 }}
@@ -157,7 +169,8 @@ export function TrackerTableRow({
               </button>
               <button
                 type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   onToggleActionMenu(app.id);
                   onDelete(app);
                 }}

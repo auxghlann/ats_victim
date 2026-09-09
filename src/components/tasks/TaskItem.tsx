@@ -38,9 +38,11 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
   return (
     <div
       className={`group flex items-center justify-between p-4 rounded-xl border transition-all relative ${
+        menuOpen ? "z-30" : ""
+      } ${
         isDone
           ? "bg-surface/50 border-outline-variant/20 opacity-60"
-          : "bg-surface border-outline-variant/40 hover:border-primary/30 shadow-2xs"
+          : "bg-surface border-outline-variant/40 hover:border-primary/30 shadow-2xs hover:shadow-xs"
       }`}
     >
       <div className="flex items-center gap-3.5 min-w-0 flex-1">
@@ -97,10 +99,13 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
         </span>
 
         {/* More Vert Menu Button & Popover */}
-        <div className="relative" ref={menuRef}>
+        <div className="relative" ref={menuRef} onClick={(e) => e.stopPropagation()}>
           <button
             type="button"
-            onClick={() => setMenuOpen(!menuOpen)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenuOpen(!menuOpen);
+            }}
             className="w-7 h-7 rounded-lg text-on-surface-variant hover:bg-surface-container flex items-center justify-center transition-colors cursor-pointer"
             title="Task actions"
           >
@@ -108,10 +113,11 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 top-8 z-30 w-32 bg-surface rounded-xl border border-outline-variant/40 shadow-lg py-1 animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute right-0 top-8 z-40 w-32 bg-surface rounded-xl border border-outline-variant/40 shadow-lg py-1 animate-in fade-in zoom-in-95 duration-100">
               <button
                 type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setMenuOpen(false);
                   onEdit(task);
                 }}
@@ -122,7 +128,8 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
               </button>
               <button
                 type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setMenuOpen(false);
                   onDelete(task.id);
                 }}

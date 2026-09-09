@@ -2,18 +2,18 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { User } from "@/types/database";
 
 interface SideNavBarProps {
-  user: User | null;
+  user?: User | null;
   onCloseMobile?: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
 }
 
 export function SideNavBar({
-  user,
   onCloseMobile,
   isCollapsed = false,
   onToggleCollapse,
@@ -42,16 +42,21 @@ export function SideNavBar({
       {/* Brand Header & Retraction Button */}
       <div className={`px-4 mb-8 flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 shrink-0 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold shadow-xs">
-            <span className="material-symbols-outlined text-2xl">work</span>
-          </div>
+          <Image
+            src="/ats-victim-logo.jpg"
+            alt="ATS Victim Logo"
+            width={40}
+            height={40}
+            className="w-10 h-10 shrink-0 rounded-xl object-cover shadow-xs"
+            priority
+          />
           {!isCollapsed && (
             <div className="min-w-0">
               <h1 className="text-base font-bold text-primary tracking-tight leading-tight truncate">
                 ATS Victim
               </h1>
               <p className="text-xs font-medium text-on-surface-variant truncate">
-                Track while waiting!
+                Better days ahead!
               </p>
             </div>
           )}
@@ -105,15 +110,13 @@ export function SideNavBar({
               href={item.href}
               onClick={onCloseMobile}
               title={isCollapsed ? item.label : undefined}
-              className={`flex items-center rounded-full text-sm font-medium transition-all duration-150 ${
-                isCollapsed
-                  ? "justify-center w-11 h-11 mx-auto"
-                  : "gap-4 px-5 py-3"
-              } ${
-                active
+              className={`flex items-center rounded-full text-sm font-medium transition-all duration-150 ${isCollapsed
+                ? "justify-center w-11 h-11 mx-auto"
+                : "gap-4 px-5 py-3"
+                } ${active
                   ? "bg-primary text-on-primary shadow-xs"
                   : "text-on-surface-variant hover:bg-surface-variant/70 hover:text-on-surface"
-              }`}
+                }`}
             >
               <span
                 className="material-symbols-outlined text-xl shrink-0"
@@ -128,39 +131,6 @@ export function SideNavBar({
           );
         })}
       </nav>
-
-      {/* User Session Footer */}
-      {user && (
-        <div className="px-3 mt-auto pt-4 border-t border-outline-variant/30">
-          <div
-            className={`flex items-center rounded-2xl bg-surface/60 border border-outline-variant/30 ${
-              isCollapsed ? "justify-center p-2" : "gap-3 p-2"
-            }`}
-          >
-            <div
-              className="w-9 h-9 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm"
-              title={user.name || "User"}
-            >
-              {user.name?.charAt(0) || "U"}
-            </div>
-            {!isCollapsed && (
-              <>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-on-surface truncate">
-                    {user.name}
-                  </p>
-                  <p className="text-[11px] text-on-surface-variant truncate">
-                    {user.email}
-                  </p>
-                </div>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-status-applied/10 text-status-applied border border-status-applied/20 shrink-0">
-                  Dev
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </aside>
   );
 }

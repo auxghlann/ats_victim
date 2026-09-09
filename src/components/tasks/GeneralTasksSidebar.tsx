@@ -42,7 +42,11 @@ function GeneralTaskRow({
   }, [menuOpen]);
 
   return (
-    <div className="group flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-container-low border border-transparent hover:border-outline-variant/30 transition-all relative">
+    <div
+      className={`group flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-container-low border border-transparent hover:border-outline-variant/30 transition-all relative ${
+        menuOpen ? "z-30" : ""
+      }`}
+    >
       <div className="flex items-center gap-2.5 min-w-0 flex-1">
         <button
           type="button"
@@ -64,20 +68,24 @@ function GeneralTaskRow({
         </span>
       </div>
 
-      <div className="relative shrink-0" ref={menuRef}>
+      <div className="relative shrink-0" ref={menuRef} onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
-          onClick={() => setMenuOpen(!menuOpen)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen(!menuOpen);
+          }}
           className="w-6 h-6 rounded text-on-surface-variant hover:bg-surface-container flex items-center justify-center transition-colors cursor-pointer"
         >
           <span className="material-symbols-outlined text-xs">more_vert</span>
         </button>
 
         {menuOpen && (
-          <div className="absolute right-0 top-7 z-30 w-28 bg-surface rounded-xl border border-outline-variant/40 shadow-lg py-1 animate-in fade-in zoom-in-95 duration-100">
+          <div className="absolute right-0 top-7 z-40 w-28 bg-surface rounded-xl border border-outline-variant/40 shadow-lg py-1 animate-in fade-in zoom-in-95 duration-100">
             <button
               type="button"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setMenuOpen(false);
                 onEdit(task);
               }}
@@ -88,7 +96,8 @@ function GeneralTaskRow({
             </button>
             <button
               type="button"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setMenuOpen(false);
                 onDelete(task.id);
               }}
@@ -117,7 +126,7 @@ export function GeneralTasksSidebar({
   const generalTasks = tasks.filter((t) => !t.application_id);
 
   return (
-    <div className="bg-surface p-6 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between">
+    <div className="bg-surface p-6 rounded-2xl border border-outline-variant/40 shadow-sm flex flex-col justify-between">
       <div>
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -139,13 +148,14 @@ export function GeneralTasksSidebar({
               value={quickTitle}
               onChange={(e) => onQuickTitleChange(e.target.value)}
               placeholder="Quick add general task..."
-              className="flex-1 px-3.5 py-2 rounded-xl bg-surface-container-low border border-outline-variant/50 text-xs text-on-surface focus:outline-none focus:border-primary placeholder:text-on-surface-variant/60"
+              className="flex-1 px-3.5 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/60 transition-all"
             />
             <button
               type="submit"
               disabled={isQuickAdding || !quickTitle.trim()}
-              className="px-3 py-2 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer shrink-0"
+              className="px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer shrink-0 flex items-center gap-1 shadow-sm"
             >
+              <span className="material-symbols-outlined text-sm font-bold">add</span>
               Add
             </button>
           </div>

@@ -20,7 +20,7 @@ export default async function HomePage() {
       <DashboardStats counts={counts} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-surface p-6 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col">
+        <div className="lg:col-span-2 bg-surface p-6 rounded-2xl border border-outline-variant/40 shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-5">
             <div>
               <h2 className="text-base font-bold text-on-surface">Weekly Activity</h2>
@@ -30,8 +30,9 @@ export default async function HomePage() {
             </div>
             <Link
               href="/tracker"
-              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+              className="px-3.5 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 transition-all flex items-center gap-1.5 shadow-sm shrink-0"
             >
+              <span className="material-symbols-outlined text-sm">table_chart</span>
               View Full Tracker
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </Link>
