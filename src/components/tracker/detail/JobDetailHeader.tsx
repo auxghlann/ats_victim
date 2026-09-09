@@ -8,7 +8,7 @@ interface JobDetailHeaderProps {
 
 export function JobDetailHeader({ app, onDelete }: JobDetailHeaderProps) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-xs">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-sm">
       <div className="flex items-start gap-4">
         {/* Company Avatar */}
         <div className="w-14 h-14 rounded-2xl bg-surface-container border border-outline-variant/40 flex items-center justify-center font-extrabold text-2xl text-primary shrink-0 shadow-2xs">

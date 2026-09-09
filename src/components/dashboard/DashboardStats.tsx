@@ -12,7 +12,7 @@ export function DashboardStats({ counts }: DashboardStatsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {/* Stat Card 1: Total Applied */}
-      <div className="bg-surface p-5 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-200">
+      <div className="bg-surface p-5 rounded-2xl border border-outline-variant/40 shadow-sm hover:shadow-md flex flex-col justify-between hover:-translate-y-0.5 transition-all duration-200">
         <div className="flex justify-between items-start mb-4">
           <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -32,7 +32,7 @@ export function DashboardStats({ counts }: DashboardStatsProps) {
       </div>
 
       {/* Stat Card 2: Active Interviews */}
-      <div className="bg-surface p-5 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-200">
+      <div className="bg-surface p-5 rounded-2xl border border-outline-variant/40 shadow-sm hover:shadow-md flex flex-col justify-between hover:-translate-y-0.5 transition-all duration-200">
         <div className="flex justify-between items-start mb-4">
           <div className="w-10 h-10 rounded-xl bg-[#FFF3E0] text-[#b06000] flex items-center justify-center">
             <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -49,7 +49,7 @@ export function DashboardStats({ counts }: DashboardStatsProps) {
       </div>
 
       {/* Stat Card 3: Pending Tasks */}
-      <div className="bg-surface p-5 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-200">
+      <div className="bg-surface p-5 rounded-2xl border border-outline-variant/40 shadow-sm hover:shadow-md flex flex-col justify-between hover:-translate-y-0.5 transition-all duration-200">
         <div className="flex justify-between items-start mb-4">
           <div className="w-10 h-10 rounded-xl bg-secondary-container text-secondary flex items-center justify-center">
             <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -71,7 +71,7 @@ export function DashboardStats({ counts }: DashboardStatsProps) {
       </div>
 
       {/* Stat Card 4: Offers Received */}
-      <div className="bg-surface p-5 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:-translate-y-0.5 transition-transform duration-200">
+      <div className="bg-surface p-5 rounded-2xl border border-outline-variant/40 shadow-sm hover:shadow-md flex flex-col justify-between hover:-translate-y-0.5 transition-all duration-200">
         <div className="flex justify-between items-start mb-4">
           <div className="w-10 h-10 rounded-xl bg-[#E6F4EA] text-[#137333] flex items-center justify-center">
             <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>

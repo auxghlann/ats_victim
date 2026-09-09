@@ -70,7 +70,7 @@ export function AddApplicationModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-black/50 transition-opacity"
         onClick={onClose}
       />
 
@@ -121,7 +121,7 @@ export function AddApplicationModal({
                 onChange={(e) =>
                   setFormData({ ...formData, company_name: e.target.value })
                 }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all shadow-2xs"
               />
             </div>
 
@@ -137,7 +137,7 @@ export function AddApplicationModal({
                 onChange={(e) =>
                   setFormData({ ...formData, job_title: e.target.value })
                 }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all shadow-2xs"
               />
             </div>
           </div>
@@ -155,7 +155,7 @@ export function AddApplicationModal({
                     status: e.target.value as ApplicationStatus,
                   })
                 }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all capitalize"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all capitalize shadow-2xs cursor-pointer"
               >
                 <option value="applied">Applied</option>
                 <option value="viewed">Viewed</option>
@@ -176,7 +176,7 @@ export function AddApplicationModal({
                 onChange={(e) =>
                   setFormData({ ...formData, location: e.target.value })
                 }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all shadow-2xs"
               />
             </div>
 
@@ -192,7 +192,7 @@ export function AddApplicationModal({
                     work_setup: e.target.value as import("@/types/database").WorkSetup,
                   })
                 }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all capitalize"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all capitalize shadow-2xs cursor-pointer"
               >
                 <option value="remote">Remote</option>
                 <option value="hybrid">Hybrid</option>
@@ -213,7 +213,7 @@ export function AddApplicationModal({
                 onChange={(e) =>
                   setFormData({ ...formData, salary_min: e.target.value })
                 }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all shadow-2xs"
               />
             </div>
 
@@ -228,7 +228,7 @@ export function AddApplicationModal({
                 onChange={(e) =>
                   setFormData({ ...formData, salary_max: e.target.value })
                 }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all shadow-2xs"
               />
             </div>
           </div>
@@ -238,14 +238,14 @@ export function AddApplicationModal({
               Posting URL
             </label>
             <input
-                type="url"
-                placeholder="https://..."
-                value={formData.posting_url}
-                onChange={(e) =>
-                  setFormData({ ...formData, posting_url: e.target.value })
-                }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all"
-              />
+              type="url"
+              placeholder="https://..."
+              value={formData.posting_url}
+              onChange={(e) =>
+                setFormData({ ...formData, posting_url: e.target.value })
+              }
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all shadow-2xs"
+            />
           </div>
 
           <div>
@@ -259,7 +259,7 @@ export function AddApplicationModal({
               onChange={(e) =>
                 setFormData({ ...formData, notes: e.target.value })
               }
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all resize-none shadow-2xs"
             />
           </div>
 
@@ -274,7 +274,7 @@ export function AddApplicationModal({
               onChange={(e) =>
                 setFormData({ ...formData, job_description: e.target.value })
               }
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/40 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:bg-surface transition-all font-mono text-xs"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all font-mono text-xs shadow-2xs"
             />
           </div>
 
@@ -283,17 +283,20 @@ export function AddApplicationModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-full text-sm font-semibold text-on-surface-variant hover:bg-surface-variant transition-colors"
+              className="px-5 py-2.5 rounded-full text-sm font-semibold text-on-surface-variant hover:bg-surface-variant transition-colors flex items-center gap-1.5"
             >
+              <span className="material-symbols-outlined text-base">close</span>
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2.5 rounded-full bg-primary text-on-primary text-sm font-semibold hover:bg-primary-container transition-all shadow-xs disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-2.5 rounded-full bg-primary text-on-primary text-sm font-semibold hover:bg-primary/90 transition-all shadow-xs disabled:opacity-50 flex items-center gap-2"
             >
-              {loading && (
+              {loading ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <span className="material-symbols-outlined text-base font-bold">add</span>
               )}
               Create Application
             </button>

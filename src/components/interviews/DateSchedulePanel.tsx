@@ -43,7 +43,11 @@ function InterviewScheduleCard({
   });
 
   return (
-    <div className="p-4 rounded-xl border border-outline-variant/30 bg-surface-container-low hover:border-primary/40 transition-all space-y-3 relative">
+    <div
+      className={`p-4 rounded-xl border border-outline-variant/30 bg-surface-container-low hover:border-primary/40 shadow-2xs transition-all space-y-3 relative ${
+        menuOpen ? "z-30" : ""
+      }`}
+    >
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <div className="w-8 h-8 rounded-lg bg-surface-container border border-outline-variant/40 flex items-center justify-center font-bold text-xs text-primary shrink-0">
@@ -71,10 +75,13 @@ function InterviewScheduleCard({
           )}
 
           {/* More Vert Menu Button & Popover */}
-          <div className="relative" ref={menuRef}>
+          <div className="relative" ref={menuRef} onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen(!menuOpen);
+              }}
               className="w-6 h-6 rounded text-on-surface-variant hover:bg-surface-container flex items-center justify-center transition-colors cursor-pointer"
               title="Interview actions"
             >
@@ -82,10 +89,11 @@ function InterviewScheduleCard({
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 top-7 z-30 w-28 bg-surface rounded-xl border border-outline-variant/40 shadow-lg py-1 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute right-0 top-7 z-40 w-28 bg-surface rounded-xl border border-outline-variant/40 shadow-lg py-1 animate-in fade-in zoom-in-95 duration-100">
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setMenuOpen(false);
                     onEdit(ev);
                   }}
@@ -96,7 +104,8 @@ function InterviewScheduleCard({
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setMenuOpen(false);
                     onDelete(ev.id);
                   }}
@@ -170,7 +179,7 @@ export function DateSchedulePanel({
   });
 
   return (
-    <div className="bg-surface p-6 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between">
+    <div className="bg-surface p-6 rounded-2xl border border-outline-variant/40 shadow-sm flex flex-col justify-between">
       <div>
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -211,10 +220,10 @@ export function DateSchedulePanel({
         <button
           type="button"
           onClick={onOpenScheduleModal}
-          className="w-full py-2.5 text-center text-xs font-semibold text-primary border border-outline-variant/50 rounded-xl hover:bg-primary/5 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+          className="w-full py-2.5 text-center text-xs font-bold text-on-primary bg-primary rounded-full hover:bg-primary/90 transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md"
         >
-          <span className="material-symbols-outlined text-sm">add</span>
-          Schedule Round on this Date
+          <span className="material-symbols-outlined text-base font-bold">add</span>
+          Schedule Interview
         </button>
       </div>
     </div>

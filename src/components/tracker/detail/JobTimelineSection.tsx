@@ -16,7 +16,7 @@ export function JobTimelineSection({ detail }: JobTimelineSectionProps) {
   })();
 
   return (
-    <div className="p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-xs space-y-4">
+    <div className="p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-sm space-y-4">
       <h2 className="text-sm font-bold text-on-surface">Activity Timeline</h2>
 
       <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-outline-variant/30">

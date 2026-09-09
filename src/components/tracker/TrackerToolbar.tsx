@@ -61,7 +61,7 @@ export function TrackerToolbar({
           <button
             type="button"
             onClick={onOpenAddModal}
-            className="px-5 py-2.5 rounded-full bg-primary text-on-primary text-xs font-semibold hover:bg-primary/90 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+            className="px-5 py-2.5 rounded-full bg-primary text-on-primary text-xs font-semibold hover:bg-primary/90 transition-all shadow-sm hover:shadow-md flex items-center gap-2 cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">add</span>
             Add Application
@@ -70,7 +70,7 @@ export function TrackerToolbar({
       </div>
 
       {/* Filter and Search Toolbar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-surface p-2.5 rounded-2xl border border-outline-variant/40 shadow-xs">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-surface p-2.5 rounded-2xl border border-outline-variant/40 shadow-sm">
         {/* Search Bar */}
         <div className="relative w-full sm:w-72">
           <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-base pointer-events-none">
@@ -81,7 +81,7 @@ export function TrackerToolbar({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search company, role, location..."
-            className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40 text-xs text-on-surface focus:outline-none focus:border-primary placeholder:text-on-surface-variant/60"
+            className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/60 transition-all"
           />
         </div>
 
@@ -92,7 +92,7 @@ export function TrackerToolbar({
             <select
               value={selectedStatus}
               onChange={(e) => onStatusChange(e.target.value)}
-              className="appearance-none pl-8 pr-8 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40 text-xs font-medium text-on-surface focus:outline-none focus:border-primary cursor-pointer"
+              className="appearance-none pl-8 pr-8 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs font-medium text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer"
             >
               <option value="all">All Statuses</option>
               <option value="applied">Applied</option>
@@ -114,7 +114,7 @@ export function TrackerToolbar({
             <select
               value={selectedWorkSetup}
               onChange={(e) => onWorkSetupChange(e.target.value)}
-              className="appearance-none pl-8 pr-8 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40 text-xs font-medium text-on-surface focus:outline-none focus:border-primary cursor-pointer"
+              className="appearance-none pl-8 pr-8 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs font-medium text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer"
             >
               <option value="all">All Work Setups</option>
               <option value="remote">Remote</option>
@@ -134,7 +134,7 @@ export function TrackerToolbar({
             type="button"
             onClick={onExportCsv}
             disabled={isExporting}
-            className="px-3 py-2 rounded-xl border border-outline-variant/40 bg-surface-container-low hover:bg-surface-container text-xs font-semibold text-on-surface transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-50"
+            className="px-3 py-2 rounded-xl border border-outline-variant/60 bg-white shadow-2xs hover:bg-surface-container text-xs font-semibold text-on-surface transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-50"
             title="Export filtered applications as CSV"
           >
             <span

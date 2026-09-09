@@ -23,7 +23,7 @@ export function PipelineStepper({ status }: PipelineStepperProps) {
   const currentStepIndex = STATUS_STEP_INDEX[status] ?? 0;
 
   return (
-    <div className="p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-xs">
+    <div className="p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm font-bold text-on-surface">Application Pipeline</h2>
         <span className="text-xs text-on-surface-variant font-medium">Stage Progress</span>

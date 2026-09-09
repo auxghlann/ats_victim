@@ -63,7 +63,7 @@ export function CalendarHeader({
               onClick={() => onViewModeChange(mode)}
               className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-all cursor-pointer ${
                 viewMode === mode
-                  ? "bg-surface text-primary shadow-xs font-bold"
+                  ? "bg-surface text-primary shadow-2xs font-bold"
                   : "text-on-surface-variant hover:text-on-surface"
               }`}
             >
@@ -76,7 +76,7 @@ export function CalendarHeader({
         <button
           type="button"
           onClick={onOpenScheduleModal}
-          className="px-5 py-2.5 rounded-full bg-primary text-on-primary text-xs font-semibold hover:bg-primary/90 transition-all shadow-xs flex items-center gap-2 cursor-pointer shrink-0"
+          className="px-5 py-2.5 rounded-full bg-primary text-on-primary text-xs font-semibold hover:bg-primary/90 transition-all shadow-sm hover:shadow-md flex items-center gap-2 cursor-pointer shrink-0"
         >
           <span className="material-symbols-outlined text-base">add</span>
           Schedule Interview

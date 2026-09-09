@@ -46,21 +46,11 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
 
   // Schedule Interview Modal State
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [modalAppId, setModalAppId] = useState(applications[0]?.id || "");
-  const [modalRoundName, setModalRoundName] = useState("");
-  const [modalDateTime, setModalDateTime] = useState(`${selectedDateStr}T14:00`);
-  const [modalMeetingLink, setModalMeetingLink] = useState("");
-  const [modalNotes, setModalNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Edit Interview Modal State
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingInterview, setEditingInterview] = useState<EnrichedInterview | null>(null);
-  const [editAppId, setEditAppId] = useState("");
-  const [editRoundName, setEditRoundName] = useState("");
-  const [editDateTime, setEditDateTime] = useState("");
-  const [editMeetingLink, setEditMeetingLink] = useState("");
-  const [editNotes, setEditNotes] = useState("");
   const [isUpdatingInterview, setIsUpdatingInterview] = useState(false);
 
   // Dynamic navigation handlers for Month, Week, and Day
@@ -187,23 +177,23 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
   }, [currentYear, currentMonthIdx, interviewsByDate]);
 
   // Create Interview submit handler
-  const handleScheduleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!modalAppId || !modalRoundName.trim() || !modalDateTime || isSubmitting) return;
+  // Create Interview submit handler
+  const handleScheduleSubmit = async (data: import("./ScheduleInterviewModal").ScheduleInterviewData) => {
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
     try {
       const input: CreateInterviewInput = {
-        applicationId: modalAppId,
-        roundName: modalRoundName.trim(),
-        scheduledAt: modalDateTime,
-        meetingLink: modalMeetingLink.trim() || null,
-        notes: modalNotes.trim() || null,
+        applicationId: data.applicationId,
+        roundName: data.roundName,
+        scheduledAt: data.scheduledAt,
+        meetingLink: data.meetingLink,
+        notes: data.notes,
       };
 
       const created = await createInterviewAction(input);
       if (created) {
-        const matchedApp = applications.find((a) => a.id === modalAppId);
+        const matchedApp = applications.find((a) => a.id === data.applicationId);
         const enriched: EnrichedInterview = {
           ...created,
           company_name: matchedApp?.company_name || null,
@@ -212,10 +202,7 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
         };
         setInterviews((prev) => [...prev, enriched]);
         setShowScheduleModal(false);
-        setModalRoundName("");
-        setModalMeetingLink("");
-        setModalNotes("");
-        setSelectedDateStr(modalDateTime.split("T")[0]);
+        setSelectedDateStr(data.scheduledAt.split("T")[0]);
       }
     } finally {
       setIsSubmitting(false);
@@ -225,31 +212,25 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
   // Open Edit Modal
   const handleOpenEdit = (interview: EnrichedInterview) => {
     setEditingInterview(interview);
-    setEditAppId(interview.application_id);
-    setEditRoundName(interview.round_name);
-    setEditDateTime(interview.scheduled_at.slice(0, 16));
-    setEditMeetingLink(interview.meeting_link || "");
-    setEditNotes(interview.notes || "");
     setShowEditModal(true);
   };
 
   // Save Edit Interview
-  const handleSaveEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingInterview || !editAppId || !editRoundName.trim() || !editDateTime || isUpdatingInterview) return;
+  const handleSaveEdit = async (data: import("./EditInterviewModal").EditInterviewData) => {
+    if (!editingInterview || isUpdatingInterview) return;
 
     setIsUpdatingInterview(true);
     try {
       const updated = await updateInterviewAction(editingInterview.id, {
-        applicationId: editAppId,
-        roundName: editRoundName.trim(),
-        scheduledAt: editDateTime,
-        meetingLink: editMeetingLink.trim() || null,
-        notes: editNotes.trim() || null,
+        applicationId: data.applicationId,
+        roundName: data.roundName,
+        scheduledAt: data.scheduledAt,
+        meetingLink: data.meetingLink,
+        notes: data.notes,
       });
 
       if (updated) {
-        const matchedApp = applications.find((a) => a.id === editAppId);
+        const matchedApp = applications.find((a) => a.id === data.applicationId);
         const enriched: EnrichedInterview = {
           ...updated,
           company_name: matchedApp?.company_name || null,
@@ -295,10 +276,7 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
         onPrevMonth={handlePrev}
         onNextMonth={handleNext}
         onToday={handleToday}
-        onOpenScheduleModal={() => {
-          setModalDateTime(`${selectedDateStr}T14:00`);
-          setShowScheduleModal(true);
-        }}
+        onOpenScheduleModal={() => setShowScheduleModal(true)}
       />
 
       {/* Main Grid: Calendar Grid & Daily Schedule */}
@@ -321,10 +299,7 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
           events={selectedDateEvents}
           onEditInterview={handleOpenEdit}
           onDeleteInterview={handleDeleteInterview}
-          onOpenScheduleModal={() => {
-            setModalDateTime(`${selectedDateStr}T14:00`);
-            setShowScheduleModal(true);
-          }}
+          onOpenScheduleModal={() => setShowScheduleModal(true)}
         />
       </div>
 
@@ -334,40 +309,25 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
         onClose={() => setShowScheduleModal(false)}
         onSubmit={handleScheduleSubmit}
         applications={applications}
-        applicationId={modalAppId}
-        onApplicationIdChange={setModalAppId}
-        roundName={modalRoundName}
-        onRoundNameChange={setModalRoundName}
-        dateTime={modalDateTime}
-        onDateTimeChange={setModalDateTime}
-        meetingLink={modalMeetingLink}
-        onMeetingLinkChange={setModalMeetingLink}
-        notes={modalNotes}
-        onNotesChange={setModalNotes}
+        defaultDateTime={`${selectedDateStr}T14:00`}
         isSubmitting={isSubmitting}
       />
 
       {/* Edit Interview Modal */}
-      <EditInterviewModal
-        isOpen={showEditModal}
-        onClose={() => {
-          setShowEditModal(false);
-          setEditingInterview(null);
-        }}
-        onSubmit={handleSaveEdit}
-        applications={applications}
-        applicationId={editAppId}
-        onApplicationIdChange={setEditAppId}
-        roundName={editRoundName}
-        onRoundNameChange={setEditRoundName}
-        dateTime={editDateTime}
-        onDateTimeChange={setEditDateTime}
-        meetingLink={editMeetingLink}
-        onMeetingLinkChange={setEditMeetingLink}
-        notes={editNotes}
-        onNotesChange={setEditNotes}
-        isSubmitting={isUpdatingInterview}
-      />
+      {editingInterview && (
+        <EditInterviewModal
+          key={editingInterview.id}
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingInterview(null);
+          }}
+          onSubmit={handleSaveEdit}
+          applications={applications}
+          interview={editingInterview}
+          isSubmitting={isUpdatingInterview}
+        />
+      )}
     </div>
   );
 }

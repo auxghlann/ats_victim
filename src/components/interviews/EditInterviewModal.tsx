@@ -1,47 +1,71 @@
 "use client";
 
-import { Application } from "@/types/database";
+import { useState } from "react";
+import { Application, EnrichedInterview } from "@/types/database";
+
+export interface EditInterviewData {
+  applicationId: string;
+  roundName: string;
+  scheduledAt: string;
+  meetingLink: string | null;
+  notes: string | null;
+}
 
 interface EditInterviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (e: React.FormEvent) => void;
+  interview: EnrichedInterview;
   applications: Application[];
-  applicationId: string;
-  onApplicationIdChange: (val: string) => void;
-  roundName: string;
-  onRoundNameChange: (val: string) => void;
-  dateTime: string;
-  onDateTimeChange: (val: string) => void;
-  meetingLink: string;
-  onMeetingLinkChange: (val: string) => void;
-  notes: string;
-  onNotesChange: (val: string) => void;
+  onSubmit: (data: EditInterviewData) => Promise<void>;
   isSubmitting: boolean;
 }
 
 export function EditInterviewModal({
   isOpen,
   onClose,
-  onSubmit,
+  interview,
   applications,
-  applicationId,
-  onApplicationIdChange,
-  roundName,
-  onRoundNameChange,
-  dateTime,
-  onDateTimeChange,
-  meetingLink,
-  onMeetingLinkChange,
-  notes,
-  onNotesChange,
+  onSubmit,
   isSubmitting,
 }: EditInterviewModalProps) {
+  const [applicationId, setApplicationId] = useState(
+    interview.application_id || applications[0]?.id || ""
+  );
+  const [roundName, setRoundName] = useState(interview.round_name || "");
+  const [dateTime, setDateTime] = useState(
+    interview.scheduled_at ? interview.scheduled_at.slice(0, 16) : ""
+  );
+  const [meetingLink, setMeetingLink] = useState(interview.meeting_link || "");
+  const [notes, setNotes] = useState(interview.notes || "");
+
+  const [prevInterview, setPrevInterview] = useState(interview);
+  if (interview && interview !== prevInterview) {
+    setPrevInterview(interview);
+    setApplicationId(interview.application_id || applications[0]?.id || "");
+    setRoundName(interview.round_name || "");
+    setDateTime(interview.scheduled_at ? interview.scheduled_at.slice(0, 16) : "");
+    setMeetingLink(interview.meeting_link || "");
+    setNotes(interview.notes || "");
+  }
+
   if (!isOpen) return null;
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!applicationId || !roundName.trim() || !dateTime || isSubmitting) return;
+
+    await onSubmit({
+      applicationId,
+      roundName: roundName.trim(),
+      scheduledAt: dateTime,
+      meetingLink: meetingLink.trim() || null,
+      notes: notes.trim() || null,
+    });
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-      <div className="bg-surface rounded-2xl border border-outline-variant/40 shadow-xl max-w-md w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 transition-opacity">
+      <div className="bg-surface rounded-2xl border border-outline-variant/40 shadow-2xl max-w-md w-full p-6 space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
@@ -61,16 +85,16 @@ export function EditInterviewModal({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-on-surface mb-1.5">
-              Application <span className="text-error">*</span>
+              Application <span className="text-status-rejected">*</span>
             </label>
             <select
               required
               value={applicationId}
-              onChange={(e) => onApplicationIdChange(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/50 text-xs text-on-surface focus:outline-none focus:border-primary cursor-pointer"
+              onChange={(e) => setApplicationId(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer"
             >
               {applications.map((app) => (
                 <option key={app.id} value={app.id}>
@@ -82,28 +106,28 @@ export function EditInterviewModal({
 
           <div>
             <label className="block text-xs font-bold text-on-surface mb-1.5">
-              Round Name <span className="text-error">*</span>
+              Round Name <span className="text-status-rejected">*</span>
             </label>
             <input
               type="text"
               required
               value={roundName}
-              onChange={(e) => onRoundNameChange(e.target.value)}
+              onChange={(e) => setRoundName(e.target.value)}
               placeholder="e.g. Technical Screen, System Design"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/50 text-xs text-on-surface focus:outline-none focus:border-primary"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             />
           </div>
 
           <div>
             <label className="block text-xs font-bold text-on-surface mb-1.5">
-              Date &amp; Time <span className="text-error">*</span>
+              Date &amp; Time <span className="text-status-rejected">*</span>
             </label>
             <input
               type="datetime-local"
               required
               value={dateTime}
-              onChange={(e) => onDateTimeChange(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/50 text-xs text-on-surface focus:outline-none focus:border-primary"
+              onChange={(e) => setDateTime(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             />
           </div>
 
@@ -114,9 +138,9 @@ export function EditInterviewModal({
             <input
               type="url"
               value={meetingLink}
-              onChange={(e) => onMeetingLinkChange(e.target.value)}
+              onChange={(e) => setMeetingLink(e.target.value)}
               placeholder="https://meet.google.com/xyz or Zoom link"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/50 text-xs text-on-surface focus:outline-none focus:border-primary"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             />
           </div>
 
@@ -127,9 +151,9 @@ export function EditInterviewModal({
             <textarea
               rows={3}
               value={notes}
-              onChange={(e) => onNotesChange(e.target.value)}
+              onChange={(e) => setNotes(e.target.value)}
               placeholder="Interviewer names, topics to review, questions to prepare..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/50 text-xs text-on-surface focus:outline-none focus:border-primary resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all resize-none"
             />
           </div>
 
@@ -137,15 +161,17 @@ export function EditInterviewModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-full text-xs font-bold text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer flex items-center gap-1.5"
             >
+              <span className="material-symbols-outlined text-sm">close</span>
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !roundName.trim() || !dateTime}
-              className="px-5 py-2 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-5 py-2 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
             >
+              <span className="material-symbols-outlined text-sm">{isSubmitting ? "hourglass_empty" : "check"}</span>
               {isSubmitting ? "Saving..." : "Save Changes"}
             </button>
           </div>

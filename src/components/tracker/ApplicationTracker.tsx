@@ -169,8 +169,8 @@ export function ApplicationTracker({
       />
 
       {/* Table Container */}
-      <div className="bg-surface rounded-2xl border border-outline-variant/40 shadow-xs overflow-hidden">
-        <div className="w-full overflow-x-auto">
+      <div className="bg-surface rounded-2xl border border-outline-variant/40 shadow-sm overflow-hidden min-h-[300px] flex flex-col justify-between">
+        <div className="w-full overflow-x-auto min-h-[240px]">
           <table className="table-fixed w-full border-collapse min-w-[750px]">
             <TrackerTableHeader
               colWidths={colWidths}
@@ -226,15 +226,18 @@ export function ApplicationTracker({
         }}
       />
 
-      <EditApplicationModal
-        isOpen={Boolean(editingApp)}
-        application={editingApp}
-        onClose={() => setEditingApp(null)}
-        onSuccess={() => {
-          setEditingApp(null);
-          loadData();
-        }}
-      />
+      {editingApp && (
+        <EditApplicationModal
+          key={editingApp.id}
+          isOpen={Boolean(editingApp)}
+          application={editingApp}
+          onClose={() => setEditingApp(null)}
+          onSuccess={() => {
+            setEditingApp(null);
+            loadData();
+          }}
+        />
+      )}
     </div>
   );
 }
