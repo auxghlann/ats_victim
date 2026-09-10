@@ -1,38 +1,61 @@
-import { getDatabase } from "@/lib/db";
+import { getSupabase } from "@/lib/db/supabase";
 import { User } from "@/types/database";
+import { encrypt, decrypt } from "@/lib/security/encryption";
 
 /**
- * Retrieves a user record by their unique ID.
+ * Retrieves a user record by their unique ID, decrypting PII fields.
  */
-export function getUserById(id: string): User | null {
-  const sql = `SELECT * FROM users WHERE id = ?`;
-  const row = getDatabase().prepare(sql).get(id) as User | undefined;
-  return row ?? null;
+export async function getUserById(id: string): Promise<User | null> {
+  const { data, error } = await getSupabase()
+    .from("users")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Supabase error fetching user by ID:", error);
+    return null;
+  }
+  if (!data) return null;
+
+  return {
+    ...data,
+    email: decrypt(data.email),
+    name: data.name ? decrypt(data.name) : null,
+  } as User;
 }
 
-
 /**
- * Upserts a user record into the database.
+ * Upserts a user record into the database with encrypted PII.
  * If user exists by id, updates email, name, and avatar_url.
  */
-export function upsertUser(user: User): User {
-  const now = user.created_at || new Date().toISOString();
-  const sql = `
-    INSERT INTO users (id, email, name, avatar_url, created_at)
-    VALUES (?, ?, ?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET
-      email = excluded.email,
-      name = coalesce(excluded.name, users.name),
-      avatar_url = coalesce(excluded.avatar_url, users.avatar_url)
-    RETURNING *
-  `;
-  const row = getDatabase().prepare(sql).get(
-    user.id,
-    user.email,
-    user.name || null,
-    user.avatar_url || null,
-    now
-  ) as User;
+export async function upsertUser(user: User): Promise<User> {
+  const payload = {
+    id: user.id,
+    email: encrypt(user.email),
+    name: user.name ? encrypt(user.name) : null,
+    avatar_url: user.avatar_url || null,
+  };
 
-  return row;
+  const { data, error } = await getSupabase()
+    .from("users")
+    .upsert(payload, { onConflict: "id" })
+    .select("*")
+    .single();
+
+  if (error) {
+    console.error("Supabase error upserting user:", error);
+    throw error;
+  }
+
+  return {
+    ...data,
+    email: decrypt(data.email),
+    name: data.name ? decrypt(data.name) : null,
+  } as User;
 }
+
+export const usersRepository = {
+  getUserById,
+  upsertUser,
+};

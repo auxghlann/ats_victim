@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useTransition, useCallback } from "react";
+import React, { useState, useEffect, useTransition, useCallback, useRef } from "react";
 import { Application } from "@/types/database";
 import { ApplicationSortColumn } from "@/lib/repositories/applicationsRepository";
 import {
@@ -25,13 +25,14 @@ interface ApplicationTrackerProps {
 }
 
 export function ApplicationTracker({
-  initialItems,
+  initialItems = [],
   initialTotal,
 }: ApplicationTrackerProps) {
   const [items, setItems] = useState<Application[]>(initialItems);
   const [total, setTotal] = useState<number>(initialTotal ?? initialItems.length);
   const [page, setPage] = useState<number>(1);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedWorkSetup, setSelectedWorkSetup] = useState<string>("all");
   const [sortBy, setSortBy] = useState<ApplicationSortColumn>("last_activity_date");
@@ -47,12 +48,21 @@ export function ApplicationTracker({
 
   // Column Resizing Hook
   const { colWidths, handleResizeStart, resetWidth, isResizingRef } = useColumnResize(TRACKER_COLUMNS);
+  const isFirstRender = useRef(true);
+
+  // Debounce search input by 300ms to avoid firing server queries on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const loadData = useCallback(() => {
     startTransition(async () => {
       try {
         const result = await fetchApplicationsAction({
-          search,
+          search: debouncedSearch,
           status: selectedStatus === "all" ? undefined : selectedStatus,
           workSetup: selectedWorkSetup === "all" ? undefined : selectedWorkSetup,
           sortBy,
@@ -66,9 +76,14 @@ export function ApplicationTracker({
         console.error("Failed to load applications:", err);
       }
     });
-  }, [search, selectedStatus, selectedWorkSetup, sortBy, sortOrder, page]);
+  }, [debouncedSearch, selectedStatus, selectedWorkSetup, sortBy, sortOrder, page]);
 
+  // Only load on user interactions; skip redundant fetch on initial mount
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     loadData();
   }, [loadData]);
 

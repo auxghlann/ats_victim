@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signInWithPopup, signOut } from "firebase/auth";
 import { getFirebaseAuth, googleAuthProvider } from "@/lib/firebase/client";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect") || "/tracker";
@@ -14,7 +14,9 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const isDevBypass = process.env.NEXT_PUBLIC_DEV_AUTH_BYPASS !== "false";
+  const isDevBypass =
+    process.env.NODE_ENV !== "production" &&
+    process.env.NEXT_PUBLIC_DEV_AUTH_BYPASS === "true";
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
@@ -62,55 +64,111 @@ export default function LoginPage() {
     }
   };
 
-
   return (
-    <div className="h-full min-h-screen bg-background text-on-surface font-sans antialiased flex flex-col justify-between">
-      {/* Minimal Top Header per Stitch Design */}
-      <header className="w-full px-6 sm:px-8 py-5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Image
-            src="/ats-victim-logo.jpg"
-            alt="ATS Victim Logo"
-            width={40}
-            height={40}
-            className="w-10 h-10 shrink-0 rounded-xl object-cover shadow-xs"
-            priority
-          />
-          <div>
-            <span className="text-xl font-bold tracking-tight text-primary">ATS Victim</span>
-            <span className="block text-xs font-medium text-on-surface-variant">
-              Better days ahead!
-            </span>
+    <div className="relative min-h-screen w-full flex items-center justify-center overflow-x-hidden font-sans antialiased select-none">
+      {/* Scenic Background Artwork (z-0 sits above body background, below z-10 content) */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <Image
+          src="/bg-sign-in.png"
+          alt="Scenic sunrise landscape with hills and traveler"
+          fill
+          priority
+          quality={100}
+          sizes="100vw"
+          className="object-cover object-bottom sm:object-center"
+        />
+      </div>
+
+      {/* Main Foreground Container */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto min-h-screen px-6 sm:px-12 lg:px-16 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16 py-12 lg:py-8">
+        {/* Left Section: Brand, Motivational Headline & Feature Highlights */}
+        <div className="w-full lg:max-w-xl flex flex-col items-start gap-6 sm:gap-8 pt-4 lg:pt-0 lg:-translate-y-16 lg:translate-x-12">
+          {/* Brand Header */}
+          <div className="flex items-center gap-3.5">
+            <Image
+              src="/ats-victim-logo.jpg"
+              alt="ATS Victim Logo"
+              width={48}
+              height={48}
+              className="w-12 h-12 rounded-2xl object-cover shadow-sm ring-1 ring-white/50"
+              priority
+            />
+            <div>
+              <span className="block text-2xl font-extrabold tracking-tight text-[#1d4ed8]">
+                ATS Victim
+              </span>
+              <span className="block text-xs font-semibold text-slate-600 tracking-wide">
+                Better days ahead!
+              </span>
+            </div>
+          </div>
+
+          {/* Motivational Hero Headline */}
+          <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-slate-900 tracking-tight leading-[1.18] drop-shadow-xs">
+            Keep going.
+            <br />
+            One application
+            <br />
+            at a time.
+          </h1>
+
+          {/* Feature Highlights Card */}
+          <div className="bg-white/80 backdrop-blur-md border border-white/70 shadow-[0_4px_24px_rgba(0,0,0,0.05)] rounded-2xl p-4 sm:p-5 inline-flex flex-wrap sm:flex-nowrap items-center gap-5 sm:gap-7">
+            {/* Feature 1: Organize */}
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 shadow-xs">
+                <span className="material-symbols-outlined text-lg">format_list_bulleted</span>
+              </div>
+              <div className="text-xs leading-tight">
+                <span className="block font-bold text-slate-800">Organize</span>
+                <span className="text-slate-500 font-medium">your applications</span>
+              </div>
+            </div>
+
+            <div className="hidden sm:block w-px h-8 bg-slate-200/80" />
+
+            {/* Feature 2: Track */}
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 shadow-xs">
+                <span className="material-symbols-outlined text-lg">leaderboard</span>
+              </div>
+              <div className="text-xs leading-tight">
+                <span className="block font-bold text-slate-800">Track your</span>
+                <span className="text-slate-500 font-medium">progress</span>
+              </div>
+            </div>
+
+            <div className="hidden sm:block w-px h-8 bg-slate-200/80" />
+
+            {/* Feature 3: Support */}
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-rose-100 flex items-center justify-center text-rose-500 shrink-0 shadow-xs">
+                <span className="material-symbols-outlined text-lg">favorite</span>
+              </div>
+              <div className="text-xs leading-tight">
+                <span className="block font-bold text-slate-800">Support your</span>
+                <span className="text-slate-500 font-medium">well-being</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs sm:text-sm text-on-surface-variant">
-          <span>Need help?</span>
-          <a
-            href="mailto:support@example.com"
-            className="text-primary hover:underline font-medium"
-          >
-            Contact Support
-          </a>
-        </div>
-      </header>
 
-      {/* Main Login Card Container per Stitch Design */}
-      <main className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-[440px] bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-outline-variant/30 p-8 sm:p-10 text-center transition-all">
-          {/* Brand Logo / Badge */}
+        {/* Right Section: Sign-In Authentication Card */}
+        <div className="w-full max-w-[420px] sm:max-w-[440px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-slate-100/90 p-8 sm:p-12 text-center transition-all">
+          {/* Mascot Centerpiece */}
           <Image
             src="/ats-victim-logo.jpg"
-            alt="ATS Victim Logo"
-            width={56}
-            height={56}
-            className="w-14 h-14 mx-auto rounded-2xl object-cover shadow-sm mb-6"
+            alt="ATS Victim Mascot"
+            width={64}
+            height={64}
+            className="w-16 h-16 mx-auto rounded-2xl object-cover shadow-xs mb-6"
             priority
           />
 
-          <h1 className="text-2xl font-bold text-on-surface tracking-tight mb-2">
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight mb-2.5">
             Sign in to ATS Victim
-          </h1>
-          <p className="text-sm text-on-surface-variant mb-8 leading-relaxed">
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mb-21 leading-relaxed max-w-[300px] mx-auto">
             Manage your job applications, interview timelines, and career milestones in one place.
           </p>
 
@@ -122,12 +180,12 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Primary Google SSO Action */}
-          <div className="space-y-4">
+          {/* Google SSO Action Button */}
+          <div className="space-y-3">
             <button
               onClick={handleGoogleSignIn}
               disabled={isLoading}
-              className="w-full h-12 px-4 rounded-full border border-outline-variant/60 bg-white hover:bg-surface-variant active:bg-surface-container transition-all flex items-center justify-center gap-3.5 shadow-xs text-sm font-semibold text-on-surface hover:shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 transition-all flex items-center justify-center gap-3 shadow-xs hover:shadow-sm text-sm font-semibold text-slate-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
@@ -138,7 +196,7 @@ export default function LoginPage() {
                 </>
               ) : (
                 <>
-                  {/* Google official colored vector logo */}
+                  {/* Official Google Vector Logo */}
                   <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
@@ -162,42 +220,46 @@ export default function LoginPage() {
               )}
             </button>
 
-            {/* Developer Bypass Action */}
+            {/* Developer Bypass Action (Dev Mode Only) */}
             {isDevBypass && (
               <div className="pt-2">
                 <button
+                  type="button"
                   onClick={() => {
                     router.push(redirectUrl);
                     router.refresh();
                   }}
-                  className="w-full h-11 px-4 rounded-full border border-status-applied/30 bg-status-applied/10 hover:bg-status-applied/20 active:bg-status-applied/25 text-status-applied text-xs font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full h-10 px-3 rounded-xl border border-dashed border-slate-300 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:border-slate-400 hover:bg-slate-50/80 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-base">terminal</span>
+                  <span className="material-symbols-outlined text-sm">terminal</span>
                   <span>Enter as Alex Dev (Dev Bypass)</span>
                 </button>
               </div>
             )}
           </div>
-        </div>
-      </main>
 
-      {/* Footer per Stitch Design */}
-      <footer className="w-full py-6 px-6 sm:px-12 flex flex-col sm:flex-row items-center justify-between text-xs text-on-surface-variant border-t border-outline-variant/30 gap-4">
-        <div>
-          <span>&copy; {new Date().getFullYear()} ATS Victim. All rights reserved.</span>
+          {/* Legal / Terms Disclaimer */}
+          <p className="text-[11px] sm:text-xs text-slate-400 mt-8 leading-relaxed">
+            By continuing, you agree to our{" "}
+            <a href="#" className="underline hover:text-slate-600 transition-colors">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a href="#" className="underline hover:text-slate-600 transition-colors">
+              Privacy Policy
+            </a>
+            .
+          </p>
         </div>
-        <div className="flex items-center gap-6">
-          <a href="#" className="hover:text-on-surface transition-colors">
-            Privacy Policy
-          </a>
-          <a href="#" className="hover:text-on-surface transition-colors">
-            Terms of Service
-          </a>
-          <a href="#" className="hover:text-on-surface transition-colors">
-            Security
-          </a>
-        </div>
-      </footer>
+      </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50" />}>
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -6,6 +6,7 @@ import {
   ApplicationStatus,
   WorkSetup,
 } from "@/types/database";
+import { getCachedData, setCachedData, invalidateCache } from "./cache";
 
 export interface CreateApplicationInput {
   company_name: string;
@@ -26,10 +27,16 @@ export async function listApplications(
 ): Promise<{ items: Application[]; total: number; counts: Record<string, number> }> {
   if (!userId) throw new Error("User ID is required");
 
-  const result = applicationsRepository.listApplications(userId, options);
-  const counts = applicationsRepository.getStatusCounts(userId);
+  const cacheKey = `apps:${userId}:${JSON.stringify(options)}`;
+  const cached = getCachedData<{ items: Application[]; total: number; counts: Record<string, number> }>(cacheKey);
+  if (cached) return cached;
 
-  return { ...result, counts };
+  const result = await applicationsRepository.listApplications(userId, options);
+  const counts = await applicationsRepository.getStatusCounts(userId);
+
+  const response = { ...result, counts };
+  setCachedData(cacheKey, response, 15);
+  return response;
 }
 
 export async function getApplicationDetail(
@@ -38,10 +45,10 @@ export async function getApplicationDetail(
 ): Promise<{ application: Application; detail: ApplicationDetail | null } | null> {
   if (!userId || !applicationId) throw new Error("User ID and Application ID are required");
 
-  const application = applicationsRepository.getApplicationById(userId, applicationId);
+  const application = await applicationsRepository.getApplicationById(userId, applicationId);
   if (!application) return null;
 
-  const detail = applicationDetailsRepository.getApplicationDetails(applicationId);
+  const detail = await applicationDetailsRepository.getApplicationDetails(applicationId);
   return { application, detail };
 }
 
@@ -57,7 +64,7 @@ export async function createApplication(
   if (!companyName) throw new Error("Company name cannot be empty");
   if (!jobTitle) throw new Error("Job title cannot be empty");
 
-  const application = applicationsRepository.createApplication(userId, {
+  const application = await applicationsRepository.createApplication(userId, {
     company_name: companyName,
     job_title: jobTitle,
     status: input.status || "applied",
@@ -68,7 +75,7 @@ export async function createApplication(
   });
 
   const today = new Date().toISOString().split("T")[0];
-  applicationDetailsRepository.upsertApplicationDetails(application.id, {
+  await applicationDetailsRepository.upsertApplicationDetails(application.id, {
     posting_url: input.posting_url?.trim() || null,
     job_description: input.job_description?.trim() || null,
     notes: input.notes?.trim() || null,
@@ -81,6 +88,8 @@ export async function createApplication(
     ],
   });
 
+  invalidateCache(`apps:${userId}`);
+  invalidateCache(`dash:${userId}`);
   return application;
 }
 
@@ -91,24 +100,26 @@ export async function updateStatus(
 ): Promise<Application> {
   if (!userId || !applicationId) throw new Error("User ID and Application ID are required");
 
-  const existing = applicationsRepository.getApplicationById(userId, applicationId);
+  const existing = await applicationsRepository.getApplicationById(userId, applicationId);
   if (!existing) throw new Error("Application not found");
   if (existing.status === newStatus) return existing;
 
   const today = new Date().toISOString().split("T")[0];
-  const updated = applicationsRepository.updateApplication(userId, applicationId, {
+  const updated = await applicationsRepository.updateApplication(userId, applicationId, {
     status: newStatus,
     last_activity_date: today,
   });
 
   if (!updated) throw new Error("Failed to update application status");
 
-  applicationDetailsRepository.appendTimelineEvent(applicationId, {
+  await applicationDetailsRepository.appendTimelineEvent(applicationId, {
     status: newStatus,
     date: today,
     snippet: `Status moved from ${existing.status} to ${newStatus}.`,
   });
 
+  invalidateCache(`apps:${userId}`);
+  invalidateCache(`dash:${userId}`);
   return updated;
 }
 
@@ -118,16 +129,22 @@ export async function updateApplication(
   updates: Partial<Application>
 ): Promise<Application> {
   if (!userId || !applicationId) throw new Error("User ID and Application ID are required");
-  const updated = applicationsRepository.updateApplication(userId, applicationId, updates);
+  const updated = await applicationsRepository.updateApplication(userId, applicationId, updates);
   if (!updated) throw new Error("Application not found or failed to update");
+
+  invalidateCache(`apps:${userId}`);
+  invalidateCache(`dash:${userId}`);
   return updated;
 }
 
 export async function deleteApplication(userId: string, applicationId: string): Promise<boolean> {
   if (!userId || !applicationId) throw new Error("User ID and Application ID are required");
 
-  const deleted = applicationsRepository.deleteApplication(userId, applicationId);
+  const deleted = await applicationsRepository.deleteApplication(userId, applicationId);
   if (!deleted) throw new Error("Application not found or already deleted");
+
+  invalidateCache(`apps:${userId}`);
+  invalidateCache(`dash:${userId}`);
   return true;
 }
 

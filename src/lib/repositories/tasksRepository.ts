@@ -1,4 +1,4 @@
-import { getDatabase } from "@/lib/db";
+import { getSupabase } from "@/lib/db/supabase";
 import { Task, EnrichedTask, TaskPriority } from "@/types/database";
 
 export interface CreateTaskData {
@@ -8,51 +8,118 @@ export interface CreateTaskData {
   dueDate?: string | null;
 }
 
-export function getTasksByApplicationId(userId: string, applicationId: string): Task[] {
-  const sql = `SELECT * FROM tasks WHERE user_id = ? AND application_id = ? ORDER BY created_at ASC`;
-  return getDatabase().prepare(sql).all(userId, applicationId) as Task[];
+export async function getTasksByApplicationId(userId: string, applicationId: string): Promise<Task[]> {
+  const { data, error } = await getSupabase()
+    .from("tasks")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("application_id", applicationId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Supabase getTasksByApplicationId error:", error);
+    return [];
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data || []).map((t: any) => ({
+    ...t,
+    completed: Boolean(t.completed) ? 1 : 0,
+  })) as Task[];
 }
 
-export function getAllTasksByUserId(userId: string): EnrichedTask[] {
-  const sql = `
-    SELECT t.*, a.company_name, a.job_title 
-    FROM tasks t
-    LEFT JOIN applications a ON t.application_id = a.id
-    WHERE t.user_id = ?
-    ORDER BY t.completed ASC, t.created_at DESC
-  `;
-  return getDatabase().prepare(sql).all(userId) as EnrichedTask[];
+export async function getAllTasksByUserId(userId: string): Promise<EnrichedTask[]> {
+  const { data, error } = await getSupabase()
+    .from("tasks")
+    .select("*, applications(company_name, job_title)")
+    .eq("user_id", userId)
+    .order("completed", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Supabase getAllTasksByUserId error:", error);
+    return [];
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data || []).map((t: any) => ({
+    id: t.id,
+    user_id: t.user_id,
+    application_id: t.application_id,
+    title: t.title,
+    due_date: t.due_date,
+    completed: Boolean(t.completed) ? 1 : 0,
+    priority: t.priority,
+    created_at: t.created_at,
+    company_name: t.applications?.company_name || null,
+    job_title: t.applications?.job_title || null,
+  })) as EnrichedTask[];
 }
 
-export function getPendingTasksCount(userId: string): number {
-  const sql = `SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND completed = 0`;
-  const row = getDatabase().prepare(sql).get(userId) as { count: number } | undefined;
-  return row ? row.count : 0;
+export async function getPendingTasksCount(userId: string): Promise<number> {
+  const { count, error } = await getSupabase()
+    .from("tasks")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .or("completed.eq.false,completed.eq.0");
+
+  if (error) {
+    console.error("Supabase getPendingTasksCount error:", error);
+    return 0;
+  }
+  return count || 0;
 }
 
-export function createTask(userId: string, data: CreateTaskData): Task {
+export async function createTask(userId: string, data: CreateTaskData): Promise<Task> {
   const id = `task-${crypto.randomUUID()}`;
   const now = new Date().toISOString();
   const priority = data.priority || "medium";
-  const sql = `
-    INSERT INTO tasks (id, user_id, application_id, title, due_date, completed, priority, created_at)
-    VALUES (?, ?, ?, ?, ?, 0, ?, ?)
-    RETURNING *
-  `;
-  return getDatabase().prepare(sql).get(
+
+  const payload = {
     id,
-    userId,
-    data.applicationId || null,
-    data.title.trim(),
-    data.dueDate || null,
+    user_id: userId,
+    application_id: data.applicationId || null,
+    title: data.title.trim(),
+    due_date: data.dueDate || null,
+    completed: false,
     priority,
-    now
-  ) as Task;
+    created_at: now,
+  };
+
+  const { data: created, error } = await getSupabase()
+    .from("tasks")
+    .insert(payload)
+    .select("*")
+    .single();
+
+  if (error) {
+    console.error("Supabase createTask error:", error);
+    throw error;
+  }
+
+  return {
+    ...created,
+    completed: Boolean(created.completed) ? 1 : 0,
+  } as Task;
 }
 
-export function toggleTask(userId: string, taskId: string, completed: boolean): Task | null {
-  const sql = `UPDATE tasks SET completed = ? WHERE user_id = ? AND id = ? RETURNING *`;
-  return (getDatabase().prepare(sql).get(completed ? 1 : 0, userId, taskId) as Task) || null;
+export async function toggleTask(userId: string, taskId: string, completed: boolean): Promise<Task | null> {
+  const { data, error } = await getSupabase()
+    .from("tasks")
+    .update({ completed })
+    .eq("user_id", userId)
+    .eq("id", taskId)
+    .select("*")
+    .maybeSingle();
+
+  if (error || !data) {
+    console.error("Supabase toggleTask error:", error);
+    return null;
+  }
+
+  return {
+    ...data,
+    completed: Boolean(data.completed) ? 1 : 0,
+  } as Task;
 }
 
 export interface UpdateTaskData {
@@ -62,38 +129,46 @@ export interface UpdateTaskData {
   applicationId?: string | null;
 }
 
-export function updateTask(userId: string, taskId: string, data: UpdateTaskData): Task | null {
-  const fields: string[] = [];
-  const params: unknown[] = [];
+export async function updateTask(userId: string, taskId: string, data: UpdateTaskData): Promise<Task | null> {
+  const payload: Record<string, unknown> = {};
+  if (data.title !== undefined) payload.title = data.title.trim();
+  if (data.priority !== undefined) payload.priority = data.priority;
+  if (data.dueDate !== undefined) payload.due_date = data.dueDate || null;
+  if (data.applicationId !== undefined) payload.application_id = data.applicationId || null;
 
-  if (data.title !== undefined) {
-    fields.push("title = ?");
-    params.push(data.title.trim());
-  }
-  if (data.priority !== undefined) {
-    fields.push("priority = ?");
-    params.push(data.priority);
-  }
-  if (data.dueDate !== undefined) {
-    fields.push("due_date = ?");
-    params.push(data.dueDate || null);
-  }
-  if (data.applicationId !== undefined) {
-    fields.push("application_id = ?");
-    params.push(data.applicationId || null);
+  if (Object.keys(payload).length === 0) return null;
+
+  const { data: updated, error } = await getSupabase()
+    .from("tasks")
+    .update(payload)
+    .eq("user_id", userId)
+    .eq("id", taskId)
+    .select("*")
+    .maybeSingle();
+
+  if (error || !updated) {
+    console.error("Supabase updateTask error:", error);
+    return null;
   }
 
-  if (fields.length === 0) return null;
-
-  params.push(userId, taskId);
-  const sql = `UPDATE tasks SET ${fields.join(", ")} WHERE user_id = ? AND id = ? RETURNING *`;
-  return (getDatabase().prepare(sql).get(...params) as Task) || null;
+  return {
+    ...updated,
+    completed: Boolean(updated.completed) ? 1 : 0,
+  } as Task;
 }
 
-export function deleteTask(userId: string, taskId: string): boolean {
-  const sql = `DELETE FROM tasks WHERE user_id = ? AND id = ?`;
-  const result = getDatabase().prepare(sql).run(userId, taskId);
-  return result.changes > 0;
+export async function deleteTask(userId: string, taskId: string): Promise<boolean> {
+  const { error } = await getSupabase()
+    .from("tasks")
+    .delete()
+    .eq("user_id", userId)
+    .eq("id", taskId);
+
+  if (error) {
+    console.error("Supabase deleteTask error:", error);
+    return false;
+  }
+  return true;
 }
 
 export const tasksRepository = {
