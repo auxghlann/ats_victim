@@ -7,7 +7,10 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const sessionCookie = request.cookies.get("__session")?.value;
-  const isDevBypass = process.env.DEV_AUTH_BYPASS !== "false";
+  const isDevBypass =
+    process.env.NODE_ENV !== "production" &&
+    (process.env.NEXT_PUBLIC_DEV_AUTH_BYPASS === "true" ||
+      process.env.DEV_AUTH_BYPASS === "true");
   const isAuthenticated = Boolean(sessionCookie) || isDevBypass;
 
   // If authenticated with real session cookie and visiting /login, redirect to /tracker

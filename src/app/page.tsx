@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
 import { dashboardService } from "@/lib/services/dashboardService";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -10,9 +11,11 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const user = await getCurrentUser();
-  const userId = user?.id || "dev-user-001";
+  if (!user) {
+    redirect("/login");
+  }
 
-  const { counts, weeklyActivity, recentApplications } = await dashboardService.getDashboardMetrics(userId);
+  const { counts, weeklyActivity, recentApplications } = await dashboardService.getDashboardMetrics(user.id);
 
   return (
     <div className="space-y-8">
