@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { User } from "@/types/database";
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin";
@@ -14,9 +15,16 @@ export const DEV_USER: User = {
 
 /**
  * Returns true if local development auth bypass is enabled.
+ * Strictly disabled in production under all circumstances.
  */
 export function isDevAuthEnabled(): boolean {
-  return process.env.DEV_AUTH_BYPASS !== "false";
+  if (process.env.NODE_ENV === "production") {
+    return false;
+  }
+  return (
+    process.env.NEXT_PUBLIC_DEV_AUTH_BYPASS === "true" ||
+    process.env.DEV_AUTH_BYPASS === "true"
+  );
 }
 
 /**
@@ -25,8 +33,10 @@ export function isDevAuthEnabled(): boolean {
  * 2. Cryptographically verifies the cookie using Firebase Admin SDK.
  * 3. Synchronizes user profile into the database via usersRepository.
  * 4. Falls back to DEV_USER if dev bypass is enabled and no session exists.
+ *
+ * Wrapped in React cache() to memoize per-request across RootLayout and page components.
  */
-export async function getCurrentUser(): Promise<User | null> {
+export const getCurrentUser = cache(async (): Promise<User | null> => {
   try {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get("__session")?.value;
@@ -39,9 +49,9 @@ export async function getCurrentUser(): Promise<User | null> {
           const decoded = await adminAuth.verifySessionCookie(sessionCookie, false);
 
           // Check if user already exists in database
-          let dbUser = getUserById(decoded.uid);
+          let dbUser = await getUserById(decoded.uid);
           if (!dbUser) {
-            dbUser = upsertUser({
+            dbUser = await upsertUser({
               id: decoded.uid,
               email: decoded.email || "",
               name: decoded.name || null,
@@ -65,4 +75,4 @@ export async function getCurrentUser(): Promise<User | null> {
   }
 
   return null;
-}
+});

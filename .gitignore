@@ -47,9 +47,15 @@ next-env.d.ts
 *.db-shm
 *.db-journal
 
+# local database scripts (prevent mock seeding in production)
+src/lib/db/seed.ts
+src/lib/db/verify-supabase.ts
+
+supabase/
 
 # local agent specific files
 .agents/
 .spec/
+.docs/
 
 .playwright-mcp/

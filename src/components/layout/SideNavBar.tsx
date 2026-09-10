@@ -108,6 +108,7 @@ export function SideNavBar({
             <Link
               key={item.href}
               href={item.href}
+              prefetch={true}
               onClick={onCloseMobile}
               title={isCollapsed ? item.label : undefined}
               className={`flex items-center rounded-full text-sm font-medium transition-all duration-150 ${isCollapsed

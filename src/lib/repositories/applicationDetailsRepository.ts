@@ -1,12 +1,26 @@
-import { getDatabase } from "@/lib/db";
+import { getSupabase } from "@/lib/db/supabase";
 import { ApplicationDetail, TimelineEvent } from "@/types/database";
 
-export function getApplicationDetails(applicationId: string): ApplicationDetail | null {
-  const query = `SELECT * FROM application_details WHERE application_id = ?`;
-  return (getDatabase().prepare(query).get(applicationId) as ApplicationDetail) || null;
+export async function getApplicationDetails(applicationId: string): Promise<ApplicationDetail | null> {
+  const { data, error } = await getSupabase()
+    .from("application_details")
+    .select("*")
+    .eq("application_id", applicationId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Supabase getApplicationDetails error:", error);
+    return null;
+  }
+  if (!data) return null;
+
+  return {
+    ...data,
+    timeline: typeof data.timeline === "string" ? data.timeline : JSON.stringify(data.timeline || []),
+  } as ApplicationDetail;
 }
 
-export function upsertApplicationDetails(
+export async function upsertApplicationDetails(
   applicationId: string,
   details: {
     posting_url?: string | null;
@@ -14,46 +28,55 @@ export function upsertApplicationDetails(
     notes?: string | null;
     timeline?: string | TimelineEvent[];
   }
-): ApplicationDetail {
+): Promise<ApplicationDetail> {
   const now = new Date().toISOString();
   const id = `detail-${crypto.randomUUID()}`;
-  const timelineStr = details.timeline !== undefined
-    ? typeof details.timeline === "string" ? details.timeline : JSON.stringify(details.timeline)
-    : null;
 
-  const sql = `
-    INSERT INTO application_details (
-      id, application_id, posting_url, job_description, notes, timeline, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, COALESCE(?, '[]'), ?, ?)
-    ON CONFLICT(application_id) DO UPDATE SET
-      posting_url = COALESCE(excluded.posting_url, application_details.posting_url),
-      job_description = COALESCE(excluded.job_description, application_details.job_description),
-      notes = COALESCE(excluded.notes, application_details.notes),
-      timeline = COALESCE(?, application_details.timeline),
-      updated_at = excluded.updated_at
-    RETURNING *
-  `;
+  let timelineParsed: unknown = [];
+  if (details.timeline !== undefined && details.timeline !== null) {
+    if (typeof details.timeline === "string") {
+      try {
+        timelineParsed = JSON.parse(details.timeline);
+      } catch {
+        timelineParsed = [];
+      }
+    } else {
+      timelineParsed = details.timeline;
+    }
+  }
 
-  return getDatabase()
-    .prepare(sql)
-    .get(
-      id,
-      applicationId,
-      details.posting_url ?? null,
-      details.job_description ?? null,
-      details.notes ?? null,
-      timelineStr,
-      now,
-      now,
-      timelineStr
-    ) as ApplicationDetail;
+  const payload: Record<string, unknown> = {
+    id,
+    application_id: applicationId,
+    updated_at: now,
+  };
+  if (details.posting_url !== undefined) payload.posting_url = details.posting_url;
+  if (details.job_description !== undefined) payload.job_description = details.job_description;
+  if (details.notes !== undefined) payload.notes = details.notes;
+  if (details.timeline !== undefined) payload.timeline = timelineParsed;
+
+  const { data, error } = await getSupabase()
+    .from("application_details")
+    .upsert(payload, { onConflict: "application_id" })
+    .select("*")
+    .single();
+
+  if (error) {
+    console.error("Supabase upsertApplicationDetails error:", error);
+    throw error;
+  }
+
+  return {
+    ...data,
+    timeline: typeof data.timeline === "string" ? data.timeline : JSON.stringify(data.timeline || []),
+  } as ApplicationDetail;
 }
 
-export function appendTimelineEvent(
+export async function appendTimelineEvent(
   applicationId: string,
   event: TimelineEvent
-): ApplicationDetail {
-  const existing = getApplicationDetails(applicationId);
+): Promise<ApplicationDetail> {
+  const existing = await getApplicationDetails(applicationId);
   let events: TimelineEvent[] = [];
   if (existing?.timeline) {
     try {

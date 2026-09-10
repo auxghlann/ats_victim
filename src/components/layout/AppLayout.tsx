@@ -16,6 +16,7 @@ export function AppLayout({ user, children }: AppLayoutProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,7 +54,7 @@ export function AppLayout({ user, children }: AppLayoutProps) {
   }, []);
 
   if (pathname === "/login") {
-    return <div className="min-h-screen w-full bg-background text-foreground">{children}</div>;
+    return <>{children}</>;
   }
 
   const handleToggleCollapse = () => {
@@ -105,32 +106,45 @@ export function AppLayout({ user, children }: AppLayoutProps) {
               className="p-0.5 rounded-full hover:ring-2 hover:ring-primary/40 transition-all cursor-pointer focus:outline-none"
               aria-label="Open profile menu"
             >
-              <div className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs shadow-xs">
-                {user?.name?.charAt(0) || user?.email?.charAt(0) || "U"}
-              </div>
+              {user?.avatar_url && !avatarError ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={user.avatar_url}
+                  alt={user.name || "User profile"}
+                  onError={() => setAvatarError(true)}
+                  className="w-8 h-8 rounded-full object-cover shadow-xs border border-outline-variant/40"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs shadow-xs">
+                  {user?.name?.charAt(0) || user?.email?.charAt(0) || "U"}
+                </div>
+              )}
             </button>
 
             {profileMenuOpen && (
               <div className="absolute right-0 top-11 z-50 w-64 bg-surface rounded-2xl border border-outline-variant/40 shadow-xl p-3 animate-in fade-in zoom-in-95 duration-100">
                 {user ? (
-                  <div className="px-3 py-2 border-b border-outline-variant/30 mb-2">
-                    <div className="flex items-center justify-between">
+                  <div className="px-3 py-2 border-b border-outline-variant/30 mb-2 flex items-center gap-2.5">
+                    {user.avatar_url && !avatarError ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={user.avatar_url}
+                        alt={user.name || "User profile"}
+                        className="w-9 h-9 rounded-full object-cover shrink-0 border border-outline-variant/40 shadow-2xs"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                        {user.name?.charAt(0) || user.email?.charAt(0) || "U"}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-on-surface truncate">
                         {user.name || "User"}
                       </p>
-                      {user.id === "dev-user-001" ? (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-status-applied/10 text-status-applied border border-status-applied/20">
-                          Dev
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                          Auth
-                        </span>
-                      )}
+                      <p className="text-[11px] text-on-surface-variant truncate mt-0.5">
+                        {user.email || "No email"}
+                      </p>
                     </div>
-                    <p className="text-[11px] text-on-surface-variant truncate mt-0.5">
-                      {user.email || "No email"}
-                    </p>
                   </div>
                 ) : (
                   <div className="px-3 py-2 border-b border-outline-variant/30 mb-2">
