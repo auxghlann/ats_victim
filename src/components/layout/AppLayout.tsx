@@ -148,21 +148,37 @@ export function AppLayout({ user, children }: AppLayoutProps) {
                   </div>
                 ) : (
                   <div className="px-3 py-2 border-b border-outline-variant/30 mb-2">
-                    <p className="text-xs font-semibold text-on-surface">Guest</p>
+                    <p className="text-xs font-semibold text-on-surface">Not Signed In</p>
+                    <a
+                      href="/login"
+                      className="text-[11px] font-bold text-primary hover:underline block mt-1"
+                    >
+                      Sign In to Account
+                    </a>
                   </div>
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProfileMenuOpen(false);
-                    handleSignOut();
-                  }}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-bold text-error hover:bg-error/10 flex items-center gap-2 cursor-pointer transition-colors"
-                >
-                  <span className="material-symbols-outlined text-base">logout</span>
-                  Sign Out
-                </button>
+                {user ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileMenuOpen(false);
+                      handleSignOut();
+                    }}
+                    className="w-full px-3 py-2 rounded-xl text-xs font-bold text-error hover:bg-error/10 flex items-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-base">logout</span>
+                    Sign Out
+                  </button>
+                ) : (
+                  <a
+                    href="/login"
+                    className="w-full px-3 py-2 rounded-xl text-xs font-bold text-primary hover:bg-primary/10 flex items-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-base">login</span>
+                    Sign In
+                  </a>
+                )}
               </div>
             )}
           </div>
