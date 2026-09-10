@@ -1,10 +1,22 @@
-import Link from "next/link";
+"use client";
+
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function NotFound() {
+  const router = useRouter();
+
+  const handleGoBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/tracker");
+    }
+  };
+
   return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-center text-center px-4 py-16">
-      <div className="max-w-md w-full bg-surface p-8 sm:p-10 rounded-3xl border border-outline-variant/40 shadow-sm flex flex-col items-center">
+    <div className="fixed inset-0 z-50 min-h-screen w-screen bg-background overflow-y-auto flex items-center justify-center p-4 sm:p-6">
+      <div className="max-w-md w-full bg-surface p-8 sm:p-10 rounded-3xl border border-outline-variant/40 shadow-sm flex flex-col items-center text-center">
         {/* Brand Mascot */}
         <Image
           src="/ats-victim-logo.jpg"
@@ -29,24 +41,15 @@ export default function NotFound() {
           The page you are looking for doesn&apos;t exist, was removed, or is temporarily unavailable.
         </p>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-          <Link
-            href="/tracker"
-            className="w-full sm:flex-1 h-11 px-4 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-base">table_chart</span>
-            Go to Tracker
-          </Link>
-
-          <Link
-            href="/login"
-            className="w-full sm:flex-1 h-11 px-4 rounded-xl border border-outline-variant/60 bg-surface hover:bg-surface-variant text-on-surface text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-base">login</span>
-            Sign In
-          </Link>
-        </div>
+        {/* Single Action Button */}
+        <button
+          type="button"
+          onClick={handleGoBack}
+          className="w-full h-11 px-5 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-[0.99]"
+        >
+          <span className="material-symbols-outlined text-base">arrow_back</span>
+          Go Back
+        </button>
       </div>
     </div>
   );

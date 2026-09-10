@@ -8,8 +8,8 @@ interface TrackerToolbarProps {
   onOpenAddModal: () => void;
   onExportCsv: () => void;
   isExporting: boolean;
-  onSyncGmail: () => void;
-  isPending: boolean;
+  onSyncGmail?: () => void;
+  isPending?: boolean;
 }
 
 export function TrackerToolbar({
@@ -22,8 +22,6 @@ export function TrackerToolbar({
   onOpenAddModal,
   onExportCsv,
   isExporting,
-  onSyncGmail,
-  isPending,
 }: TrackerToolbarProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -39,7 +37,7 @@ export function TrackerToolbar({
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Sync Gmail Trigger */}
+          {/* Sync Gmail Trigger - commented out until Gmail integration is ready
           <button
             type="button"
             onClick={onSyncGmail}
@@ -56,6 +54,7 @@ export function TrackerToolbar({
             </span>
             <span>{isPending ? "Syncing..." : "Sync Gmail"}</span>
           </button>
+          */}
 
           {/* Add Application Trigger */}
           <button
