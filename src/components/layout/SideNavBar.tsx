@@ -43,11 +43,11 @@ export function SideNavBar({
       <div className={`px-4 mb-8 flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
         <div className="flex items-center gap-3 min-w-0">
           <Image
-            src="/ats-victim-logo.jpg"
+            src="/ats-victim-logo.png"
             alt="ATS Victim Logo"
             width={40}
             height={40}
-            className="w-10 h-10 shrink-0 rounded-xl object-cover shadow-xs"
+            className="w-10 h-10 shrink-0 rounded-xl object-contain drop-shadow-xs"
             priority
           />
           {!isCollapsed && (

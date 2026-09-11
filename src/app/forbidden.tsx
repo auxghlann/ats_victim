@@ -19,11 +19,11 @@ export default function Forbidden() {
       <div className="max-w-md w-full bg-surface p-8 sm:p-10 rounded-3xl border border-outline-variant/40 shadow-sm flex flex-col items-center text-center">
         {/* Brand Mascot */}
         <Image
-          src="/ats-victim-logo.jpg"
+          src="/ats-victim-logo.png"
           alt="ATS Victim Logo"
           width={64}
           height={64}
-          className="w-16 h-16 rounded-2xl object-cover shadow-xs mb-5"
+          className="w-16 h-16 rounded-2xl object-contain drop-shadow-xs mb-5"
           priority
         />
 

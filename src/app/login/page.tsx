@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signInWithPopup, signOut } from "firebase/auth";
 import { getFirebaseAuth, googleAuthProvider } from "@/lib/firebase/client";
+import { LegalModal } from "@/components/legal/LegalModal";
 
 function LoginContent() {
   const router = useRouter();
@@ -13,6 +14,7 @@ function LoginContent() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [activeLegalModal, setActiveLegalModal] = useState<"terms" | "privacy" | null>(null);
 
   const isDevBypass =
     process.env.NODE_ENV !== "production" &&
@@ -86,11 +88,11 @@ function LoginContent() {
           {/* Brand Header */}
           <div className="flex items-center gap-3.5">
             <Image
-              src="/ats-victim-logo.jpg"
+              src="/ats-victim-logo.png"
               alt="ATS Victim Logo"
               width={48}
               height={48}
-              className="w-12 h-12 rounded-2xl object-cover shadow-sm ring-1 ring-white/50"
+              className="w-12 h-12 rounded-2xl object-contain drop-shadow-xs"
               priority
             />
             <div>
@@ -157,11 +159,11 @@ function LoginContent() {
         <div className="w-full max-w-[420px] sm:max-w-[440px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-slate-100/90 p-8 sm:p-12 text-center transition-all">
           {/* Mascot Centerpiece */}
           <Image
-            src="/ats-victim-logo.jpg"
+            src="/ats-victim-logo.png"
             alt="ATS Victim Mascot"
             width={64}
             height={64}
-            className="w-16 h-16 mx-auto rounded-2xl object-cover shadow-xs mb-6"
+            className="w-16 h-16 mx-auto rounded-2xl object-contain drop-shadow-xs mb-6"
             priority
           />
 
@@ -240,18 +242,33 @@ function LoginContent() {
 
           {/* Legal / Terms Disclaimer */}
           <p className="text-[11px] sm:text-xs text-slate-400 mt-8 leading-relaxed">
-            By continuing, you agree to our{" "}
-            <a href="#" className="underline hover:text-slate-600 transition-colors">
+            By continuing, you confirm that you are of legal working age and agree to our{" "}
+            <button
+              type="button"
+              onClick={() => setActiveLegalModal("terms")}
+              className="text-blue-600 hover:text-blue-700 font-semibold underline underline-offset-2 transition-colors cursor-pointer"
+            >
               Terms of Service
-            </a>{" "}
+            </button>{" "}
             and{" "}
-            <a href="#" className="underline hover:text-slate-600 transition-colors">
+            <button
+              type="button"
+              onClick={() => setActiveLegalModal("privacy")}
+              className="text-blue-600 hover:text-blue-700 font-semibold underline underline-offset-2 transition-colors cursor-pointer"
+            >
               Privacy Policy
-            </a>
+            </button>
             .
           </p>
         </div>
       </div>
+
+      {/* Scrollable Legal Pop-up Modal */}
+      <LegalModal
+        isOpen={Boolean(activeLegalModal)}
+        initialTab={activeLegalModal ?? "terms"}
+        onClose={() => setActiveLegalModal(null)}
+      />
     </div>
   );
 }

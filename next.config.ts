@@ -50,6 +50,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["firebase-admin"],
+  images: {
+    qualities: [75, 100],
+  },
   experimental: {
     staleTimes: {
       dynamic: 30,

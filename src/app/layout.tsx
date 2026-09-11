@@ -17,9 +17,9 @@ export const metadata: Metadata = {
   title: "ATS Victim - Autonomous Job Tracker",
   description: "AI-powered job application tracking platform with automated Gmail synchronization",
   icons: {
-    icon: "/ats-victim-logo.ico",
-    shortcut: "/ats-victim-logo.ico",
-    apple: "/ats-victim-logo.jpg",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/ats-victim-logo.png",
   },
 };
 
