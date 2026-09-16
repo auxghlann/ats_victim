@@ -78,7 +78,15 @@ export async function createApplication(
   await applicationDetailsRepository.upsertApplicationDetails(application.id, {
     posting_url: input.posting_url?.trim() || null,
     job_description: input.job_description?.trim() || null,
-    notes: input.notes?.trim() || null,
+    notes: input.notes?.trim()
+      ? [
+          {
+            id: `note-${Date.now()}`,
+            date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+            content: input.notes.trim(),
+          },
+        ]
+      : [],
     timeline: [
       {
         status: application.status,

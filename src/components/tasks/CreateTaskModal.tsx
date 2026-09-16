@@ -16,6 +16,8 @@ interface CreateTaskModalProps {
   applications: Application[];
   onSubmit: (data: CreateTaskData) => Promise<void>;
   isSubmitting: boolean;
+  disableApplicationSelect?: boolean;
+  defaultApplicationId?: string;
 }
 
 export function CreateTaskModal({
@@ -24,11 +26,19 @@ export function CreateTaskModal({
   applications,
   onSubmit,
   isSubmitting,
+  disableApplicationSelect,
+  defaultApplicationId,
 }: CreateTaskModalProps) {
   const [title, setTitle] = useState("");
-  const [applicationId, setApplicationId] = useState("");
+  const [applicationId, setApplicationId] = useState(defaultApplicationId || "");
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [dueDate, setDueDate] = useState("");
+
+  const [prevDefaultAppId, setPrevDefaultAppId] = useState(defaultApplicationId);
+  if (defaultApplicationId !== prevDefaultAppId) {
+    setPrevDefaultAppId(defaultApplicationId);
+    setApplicationId(defaultApplicationId || "");
+  }
 
   if (!isOpen) return null;
 
@@ -100,8 +110,13 @@ export function CreateTaskModal({
             </label>
             <select
               value={applicationId}
+              disabled={disableApplicationSelect}
               onChange={(e) => setApplicationId(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer"
+              className={`w-full px-3.5 py-2.5 rounded-xl border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all ${
+                disableApplicationSelect
+                  ? "bg-surface-container opacity-60 cursor-not-allowed"
+                  : "bg-white cursor-pointer"
+              }`}
             >
               <option value="">None (General Task)</option>
               {applications.map((app) => (

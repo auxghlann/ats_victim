@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
 import { applicationsService } from "@/lib/services/applicationsService";
+import { tasksService } from "@/lib/services/tasksService";
 import { JobDetailView } from "@/components/tracker/detail/JobDetailView";
 
 export const dynamic = "force-dynamic";
@@ -11,10 +13,17 @@ interface JobDetailPageProps {
 
 export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const user = await getCurrentUser();
-  const userId = user?.id || "dev-user-001";
+  if (!user) {
+    redirect("/login");
+  }
+
   const { id } = await params;
 
-  const result = await applicationsService.getApplicationDetail(userId, id);
+  const [result, tasks, allAppsResult] = await Promise.all([
+    applicationsService.getApplicationDetail(user.id, id),
+    tasksService.getApplicationTasks(user.id, id),
+    applicationsService.listApplications(user.id, {}),
+  ]);
 
   if (!result || !result.application) {
     return (
@@ -42,6 +51,8 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
     <JobDetailView
       application={result.application}
       detail={result.detail}
+      tasks={tasks}
+      applications={allAppsResult.items}
     />
   );
 }
