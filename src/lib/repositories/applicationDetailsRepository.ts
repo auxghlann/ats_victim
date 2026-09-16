@@ -1,5 +1,5 @@
 import { getSupabase } from "@/lib/db/supabase";
-import { ApplicationDetail, TimelineEvent } from "@/types/database";
+import { ApplicationDetail, NoteItem, TimelineEvent } from "@/types/database";
 
 export async function getApplicationDetails(applicationId: string): Promise<ApplicationDetail | null> {
   const { data, error } = await getSupabase()
@@ -25,7 +25,7 @@ export async function upsertApplicationDetails(
   details: {
     posting_url?: string | null;
     job_description?: string | null;
-    notes?: string | null;
+    notes?: NoteItem[] | null;
     timeline?: string | TimelineEvent[];
   }
 ): Promise<ApplicationDetail> {

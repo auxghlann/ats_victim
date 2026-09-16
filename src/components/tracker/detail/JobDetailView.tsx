@@ -2,22 +2,27 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Application, ApplicationDetail } from "@/types/database";
+import { Application, ApplicationDetail, Task } from "@/types/database";
 import { deleteApplicationAction } from "@/app/actions/applicationsAction";
 import { JobDetailHeader } from "./JobDetailHeader";
 import { PipelineStepper } from "./PipelineStepper";
 import { JobDescriptionSection } from "./JobDescriptionSection";
 import { JobNotesSection } from "./JobNotesSection";
+import { JobTasksSection } from "./JobTasksSection";
 import { JobTimelineSection } from "./JobTimelineSection";
 
 interface JobDetailViewProps {
   application: Application;
   detail: ApplicationDetail | null;
+  tasks: Task[];
+  applications: Application[];
 }
 
 export function JobDetailView({
   application: initialApp,
   detail: initialDetail,
+  tasks,
+  applications,
 }: JobDetailViewProps) {
   const router = useRouter();
   const [app] = useState<Application>(initialApp);
@@ -54,8 +59,13 @@ export function JobDetailView({
           />
         </div>
 
-        {/* Right 1 Column: Timeline */}
+        {/* Right 1 Column: Tasks & Timeline */}
         <div className="space-y-6">
+          <JobTasksSection
+            application={app}
+            initialTasks={tasks}
+            applications={applications}
+          />
           <JobTimelineSection detail={detail} />
         </div>
       </div>

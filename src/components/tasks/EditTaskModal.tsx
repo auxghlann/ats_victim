@@ -17,6 +17,7 @@ interface EditTaskModalProps {
   applications: Application[];
   onSubmit: (data: EditTaskData) => Promise<void>;
   isSubmitting: boolean;
+  disableApplicationSelect?: boolean;
 }
 
 export function EditTaskModal({
@@ -26,6 +27,7 @@ export function EditTaskModal({
   applications,
   onSubmit,
   isSubmitting,
+  disableApplicationSelect,
 }: EditTaskModalProps) {
   const [title, setTitle] = useState(task.title || "");
   const [applicationId, setApplicationId] = useState(task.application_id || "");
@@ -98,8 +100,13 @@ export function EditTaskModal({
             </label>
             <select
               value={applicationId}
+              disabled={disableApplicationSelect}
               onChange={(e) => setApplicationId(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer"
+              className={`w-full px-3.5 py-2.5 rounded-xl border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all ${
+                disableApplicationSelect
+                  ? "bg-surface-container opacity-60 cursor-not-allowed"
+                  : "bg-white cursor-pointer"
+              }`}
             >
               <option value="">None (General Task)</option>
               {applications.map((app) => (

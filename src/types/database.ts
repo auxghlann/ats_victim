@@ -60,12 +60,18 @@ export interface TimelineEvent {
   snippet?: string;
 }
 
+export interface NoteItem {
+  id: string;
+  date: string;
+  content: string;
+}
+
 export interface ApplicationDetail {
   id: string;
   application_id: string;
   posting_url?: string | null;
   job_description?: string | null;
-  notes?: string | null;
+  notes?: NoteItem[] | null;
   timeline: string | TimelineEvent[]; // String in SQLite, parsed to TimelineEvent[]
   created_at?: string;
   updated_at?: string;

@@ -13,6 +13,31 @@ export async function addNoteAction(applicationId: string, content: string) {
   return detail;
 }
 
+export async function updateNoteAction(
+  applicationId: string,
+  noteId: string,
+  content: string
+) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const detail = await applicationDetailsService.updateNote(user.id, applicationId, noteId, content);
+  revalidatePath(`/tracker/${applicationId}`);
+  return detail;
+}
+
+export async function deleteNoteAction(
+  applicationId: string,
+  noteId: string
+) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const detail = await applicationDetailsService.deleteNote(user.id, applicationId, noteId);
+  revalidatePath(`/tracker/${applicationId}`);
+  return detail;
+}
+
 export async function updateJobDescriptionAction(
   applicationId: string,
   description: string
