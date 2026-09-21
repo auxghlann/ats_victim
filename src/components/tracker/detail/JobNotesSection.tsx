@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { addNoteAction, updateNoteAction, deleteNoteAction } from "@/app/actions/applicationDetailsAction";
 import { ApplicationDetail, NoteItem } from "@/types/database";
+import { FloatingDropdown } from "@/components/common/FloatingDropdown";
 
 interface JobNotesSectionProps {
   applicationId: string;
@@ -19,21 +20,7 @@ function NoteCard({ note, applicationId, onUpdated }: NoteCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(note.content);
   const [isSaving, setIsSaving] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false);
-      }
-    }
-    if (menuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [menuOpen]);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleSaveEdit = async () => {
     if (!editContent.trim() || isSaving) return;
@@ -71,9 +58,10 @@ function NoteCard({ note, applicationId, onUpdated }: NoteCardProps) {
           {note.date}
         </span>
 
-        {/* More Vert Menu Button */}
-        <div className="relative" ref={menuRef}>
+        {/* More Vert Menu Button & Floating Dropdown */}
+        <div className="relative">
           <button
+            ref={buttonRef}
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
             className="w-6 h-6 rounded-md text-on-surface-variant hover:bg-surface-container flex items-center justify-center cursor-pointer transition-colors"
@@ -82,32 +70,37 @@ function NoteCard({ note, applicationId, onUpdated }: NoteCardProps) {
             <span className="material-symbols-outlined text-base">more_vert</span>
           </button>
 
-          {menuOpen && (
-            <div className="absolute right-0 top-7 z-30 w-32 bg-surface rounded-xl border border-outline-variant/40 shadow-lg py-1 animate-in fade-in zoom-in-95">
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  setIsEditing(true);
-                }}
-                className="w-full px-3 py-1.5 text-left text-xs font-semibold text-on-surface hover:bg-surface-container flex items-center gap-2 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-sm text-primary">edit</span>
-                Edit Note
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  handleDelete();
-                }}
-                className="w-full px-3 py-1.5 text-left text-xs font-semibold text-error hover:bg-error/10 flex items-center gap-2 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-sm">delete</span>
-                Delete Note
-              </button>
-            </div>
-          )}
+          <FloatingDropdown
+            isOpen={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            anchorRef={buttonRef}
+            className="w-32 bg-surface rounded-xl border border-outline-variant/40 shadow-lg py-1 text-left"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false);
+                setIsEditing(true);
+              }}
+              className="w-full px-3 py-1.5 text-left text-xs font-semibold text-on-surface hover:bg-surface-container flex items-center gap-2 cursor-pointer transition-colors"
+            >
+              <span className="material-symbols-outlined text-sm text-primary">edit</span>
+              Edit Note
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false);
+                handleDelete();
+              }}
+              className="w-full px-3 py-1.5 text-left text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white active:bg-red-700 flex items-center gap-2 cursor-pointer transition-colors rounded-lg group/del"
+            >
+              <span className="material-symbols-outlined text-sm shrink-0 group-hover/del:text-white">
+                delete
+              </span>
+              Delete Note
+            </button>
+          </FloatingDropdown>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { EnrichedTask, TaskPriority } from "@/types/database";
+import { FloatingDropdown } from "@/components/common/FloatingDropdown";
 
 const PRIORITY_BADGES: Record<TaskPriority, { bg: string; text: string; border: string }> = {
   high: { bg: "bg-error/10", text: "text-error", border: "border-error/20" },
@@ -17,29 +18,13 @@ interface TaskItemProps {
 
 export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const isDone = Boolean(task.completed);
   const badge = PRIORITY_BADGES[task.priority as TaskPriority] || PRIORITY_BADGES.medium;
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false);
-      }
-    }
-    if (menuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [menuOpen]);
 
   return (
     <div
       className={`group flex items-center justify-between p-4 rounded-xl border transition-all relative ${
-        menuOpen ? "z-30" : ""
-      } ${
         isDone
           ? "bg-surface/50 border-outline-variant/20 opacity-60"
           : "bg-surface border-outline-variant/40 hover:border-primary/30 shadow-2xs hover:shadow-xs"
@@ -99,8 +84,9 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
         </span>
 
         {/* More Vert Menu Button & Popover */}
-        <div className="relative" ref={menuRef} onClick={(e) => e.stopPropagation()}>
+        <div className="relative">
           <button
+            ref={buttonRef}
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -112,34 +98,37 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
             <span className="material-symbols-outlined text-base">more_vert</span>
           </button>
 
-          {menuOpen && (
-            <div className="absolute right-0 top-8 z-40 w-32 bg-surface rounded-xl border border-outline-variant/40 shadow-lg py-1 animate-in fade-in zoom-in-95 duration-100">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpen(false);
-                  onEdit(task);
-                }}
-                className="w-full px-3 py-1.5 text-left text-xs font-semibold text-on-surface hover:bg-surface-container flex items-center gap-2 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-sm text-primary">edit</span>
-                Edit
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpen(false);
-                  onDelete(task.id);
-                }}
-                className="w-full px-3 py-1.5 text-left text-xs font-semibold text-error hover:bg-error/10 flex items-center gap-2 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-sm">delete</span>
-                Delete
-              </button>
-            </div>
-          )}
+          <FloatingDropdown
+            isOpen={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            anchorRef={buttonRef}
+            className="w-32 bg-surface rounded-xl border border-outline-variant/40 shadow-lg py-1 text-left"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false);
+                onEdit(task);
+              }}
+              className="w-full px-3 py-1.5 text-left text-xs font-semibold text-on-surface hover:bg-surface-container flex items-center gap-2 cursor-pointer transition-colors"
+            >
+              <span className="material-symbols-outlined text-sm text-primary">edit</span>
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false);
+                onDelete(task.id);
+              }}
+              className="w-full px-3 py-1.5 text-left text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white active:bg-red-700 flex items-center gap-2 cursor-pointer transition-colors rounded-lg group/del"
+            >
+              <span className="material-symbols-outlined text-sm shrink-0 group-hover/del:text-white">
+                delete
+              </span>
+              Delete
+            </button>
+          </FloatingDropdown>
         </div>
       </div>
     </div>
