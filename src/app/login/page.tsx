@@ -16,10 +16,6 @@ function LoginContent() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeLegalModal, setActiveLegalModal] = useState<"terms" | "privacy" | null>(null);
 
-  const isDevBypass =
-    process.env.NODE_ENV !== "production" &&
-    process.env.NEXT_PUBLIC_DEV_AUTH_BYPASS === "true";
-
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     setErrorMessage(null);
@@ -221,23 +217,6 @@ function LoginContent() {
                 </>
               )}
             </button>
-
-            {/* Developer Bypass Action (Dev Mode Only) */}
-            {isDevBypass && (
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    router.push(redirectUrl);
-                    router.refresh();
-                  }}
-                  className="w-full h-10 px-3 rounded-xl border border-dashed border-slate-300 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:border-slate-400 hover:bg-slate-50/80 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-sm">terminal</span>
-                  <span>Enter as Alex Dev (Dev Bypass)</span>
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Legal / Terms Disclaimer */}

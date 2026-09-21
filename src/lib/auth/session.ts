@@ -4,28 +4,6 @@ import { User } from "@/types/database";
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin";
 import { getUserById, upsertUser } from "@/lib/repositories/usersRepository";
 
-export const DEV_USER: User = {
-  id: "dev-user-001",
-  email: "alex.dev@example.com",
-  name: "Alex Dev",
-  avatar_url:
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-  created_at: new Date().toISOString(),
-};
-
-/**
- * Returns true if local development auth bypass is enabled.
- * Strictly disabled in production under all circumstances.
- */
-export function isDevAuthEnabled(): boolean {
-  if (process.env.NODE_ENV === "production") {
-    return false;
-  }
-  return (
-    process.env.NEXT_PUBLIC_DEV_AUTH_BYPASS === "true" ||
-    process.env.DEV_AUTH_BYPASS === "true"
-  );
-}
 
 /**
  * Returns the active user session.
@@ -67,11 +45,6 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
     }
   } catch {
     // cookies() might fail if invoked outside of a request scope (e.g. static prerender)
-  }
-
-  // Fallback to local dev user if bypass is enabled
-  if (isDevAuthEnabled()) {
-    return DEV_USER;
   }
 
   return null;

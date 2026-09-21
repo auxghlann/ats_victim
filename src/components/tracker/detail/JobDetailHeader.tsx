@@ -3,10 +3,9 @@ import { Application, STATUS_BADGE_CLASSES } from "@/types/database";
 
 interface JobDetailHeaderProps {
   app: Application;
-  onDelete: () => void;
 }
 
-export function JobDetailHeader({ app, onDelete }: JobDetailHeaderProps) {
+export function JobDetailHeader({ app }: JobDetailHeaderProps) {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-sm">
       <div className="flex items-start gap-4">
@@ -59,14 +58,6 @@ export function JobDetailHeader({ app, onDelete }: JobDetailHeaderProps) {
           <span className="material-symbols-outlined text-sm">arrow_back</span>
           Back
         </Link>
-        <button
-          type="button"
-          onClick={onDelete}
-          className="px-4 py-2 rounded-xl text-xs font-semibold text-error hover:bg-error/10 transition-colors flex items-center gap-1.5 cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-sm">delete</span>
-          Delete
-        </button>
       </div>
     </div>
   );

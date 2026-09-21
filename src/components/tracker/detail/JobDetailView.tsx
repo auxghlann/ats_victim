@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Application, ApplicationDetail, Task } from "@/types/database";
-import { deleteApplicationAction } from "@/app/actions/applicationsAction";
 import { JobDetailHeader } from "./JobDetailHeader";
 import { PipelineStepper } from "./PipelineStepper";
 import { JobDescriptionSection } from "./JobDescriptionSection";
@@ -24,21 +22,13 @@ export function JobDetailView({
   tasks,
   applications,
 }: JobDetailViewProps) {
-  const router = useRouter();
   const [app] = useState<Application>(initialApp);
   const [detail, setDetail] = useState<ApplicationDetail | null>(initialDetail);
-
-  const handleDelete = async () => {
-    if (confirm(`Are you sure you want to delete application for ${app.company_name}?`)) {
-      await deleteApplicationAction(app.id);
-      router.push("/tracker");
-    }
-  };
 
   return (
     <div className="space-y-6">
       {/* 1. Hero Job Header */}
-      <JobDetailHeader app={app} onDelete={handleDelete} />
+      <JobDetailHeader app={app} />
 
       {/* 2. Visual Status Stepper */}
       <PipelineStepper status={app.status} />

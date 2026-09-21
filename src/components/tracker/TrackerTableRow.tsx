@@ -1,7 +1,9 @@
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Application, STATUS_BADGE_CLASSES } from "@/types/database";
 import { formatRelativeDate } from "@/lib/utils/date";
+import { FloatingDropdown } from "@/components/common/FloatingDropdown";
 
 interface TrackerTableRowProps {
   app: Application;
@@ -19,6 +21,7 @@ export function TrackerTableRow({
   onDelete,
 }: TrackerTableRowProps) {
   const router = useRouter();
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const isMenuOpen = openActionMenuId === app.id;
 
   const handleRowClick = (e: React.MouseEvent) => {
@@ -115,8 +118,9 @@ export function TrackerTableRow({
       </td>
 
       {/* 7. Actions Menu */}
-      <td className={`px-2 py-3.5 text-center ${isMenuOpen ? "relative z-30" : "relative"}`}>
+      <td className="px-2 py-3.5 text-center relative">
         <button
+          ref={buttonRef}
           type="button"
           onClick={(e) => {
             e.stopPropagation();
@@ -128,60 +132,51 @@ export function TrackerTableRow({
           <span className="material-symbols-outlined text-base">more_vert</span>
         </button>
 
-        {isMenuOpen && (
-          <>
-            <div
-              data-no-row-click
-              className="fixed inset-0 z-20 cursor-default"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleActionMenu(app.id);
-              }}
-            />
-            <div
-              data-no-row-click
-              onClick={(e) => e.stopPropagation()}
-              className="absolute right-2 top-10 z-30 w-36 py-1.5 rounded-xl bg-surface border border-outline-variant/40 shadow-lg animate-in fade-in zoom-in-95 duration-100 text-left"
-            >
-              <Link
-                href={`/tracker/${app.id}`}
-                className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-on-surface hover:bg-surface-container transition-colors"
-                onClick={() => onToggleActionMenu(app.id)}
-              >
-                <span className="material-symbols-outlined text-sm text-on-surface-variant">
-                  visibility
-                </span>
-                View Details
-              </Link>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleActionMenu(app.id);
-                  onEdit(app);
-                }}
-                className="w-full flex items-center gap-2 px-3.5 py-1.5 text-xs text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-sm text-on-surface-variant">
-                  edit
-                </span>
-                Edit
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleActionMenu(app.id);
-                  onDelete(app);
-                }}
-                className="w-full flex items-center gap-2 px-3.5 py-1.5 text-xs text-error hover:bg-error/10 transition-colors cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-sm">delete</span>
-                Delete
-              </button>
-            </div>
-          </>
-        )}
+        <FloatingDropdown
+          isOpen={isMenuOpen}
+          onClose={() => onToggleActionMenu(app.id)}
+          anchorRef={buttonRef}
+          className="w-36 py-1.5 rounded-xl bg-surface border border-outline-variant/40 shadow-lg text-left"
+        >
+          <Link
+            href={`/tracker/${app.id}`}
+            className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-on-surface hover:bg-surface-container transition-colors"
+            onClick={() => onToggleActionMenu(app.id)}
+          >
+            <span className="material-symbols-outlined text-sm text-on-surface-variant">
+              visibility
+            </span>
+            View Details
+          </Link>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleActionMenu(app.id);
+              onEdit(app);
+            }}
+            className="w-full flex items-center gap-2 px-3.5 py-1.5 text-xs text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-sm text-on-surface-variant">
+              edit
+            </span>
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleActionMenu(app.id);
+              onDelete(app);
+            }}
+            className="w-full flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white active:bg-red-700 transition-colors cursor-pointer rounded-lg group/del"
+          >
+            <span className="material-symbols-outlined text-sm shrink-0 group-hover/del:text-white">
+              delete
+            </span>
+            Delete
+          </button>
+        </FloatingDropdown>
       </td>
     </tr>
   );
