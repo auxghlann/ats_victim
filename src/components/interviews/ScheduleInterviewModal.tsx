@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Application } from "@/types/database";
+import { toIsoUtcString } from "@/lib/utils/date";
 
 export interface ScheduleInterviewData {
   applicationId: string;
@@ -34,6 +35,12 @@ export function ScheduleInterviewModal({
   const [meetingLink, setMeetingLink] = useState("");
   const [notes, setNotes] = useState("");
 
+  const [prevDefault, setPrevDefault] = useState(defaultDateTime);
+  if (defaultDateTime !== prevDefault) {
+    setPrevDefault(defaultDateTime);
+    setDateTime(defaultDateTime || "");
+  }
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,7 +50,7 @@ export function ScheduleInterviewModal({
     await onSubmit({
       applicationId,
       roundName: roundName.trim(),
-      scheduledAt: dateTime,
+      scheduledAt: toIsoUtcString(dateTime),
       meetingLink: meetingLink.trim() || null,
       notes: notes.trim() || null,
     });

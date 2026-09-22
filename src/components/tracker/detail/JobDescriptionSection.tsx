@@ -17,6 +17,12 @@ export function JobDescriptionSection({
   const [isEditing, setIsEditing] = useState(false);
   const [descriptionDraft, setDescriptionDraft] = useState(detail?.job_description || "");
   const [isSaving, setIsSaving] = useState(false);
+  const [isClamped, setIsClamped] = useState(true);
+
+  const wordCount = detail?.job_description
+    ? detail.job_description.trim().split(/\s+/).filter(Boolean).length
+    : 0;
+  const isLongDescription = wordCount > 60;
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -35,8 +41,10 @@ export function JobDescriptionSection({
 
   return (
     <div className="p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-sm space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-bold text-on-surface">Job Description</h2>
+
         <div className="flex items-center gap-2">
           {detail?.posting_url && (
             <a
@@ -74,6 +82,7 @@ export function JobDescriptionSection({
         </div>
       </div>
 
+      {/* Editor Mode */}
       {isEditing ? (
         <div className="space-y-3">
           <textarea
@@ -106,11 +115,43 @@ export function JobDescriptionSection({
           </div>
         </div>
       ) : (
-        <div className="text-xs text-on-surface-variant leading-relaxed">
+        /* View Mode with Expand / Retract */
+        <div className="space-y-3">
           {detail?.job_description ? (
-            <MarkdownRenderer content={detail.job_description} />
+            <>
+              <div className="relative">
+                <div
+                  className={`text-xs text-on-surface-variant leading-relaxed transition-all duration-300 ${
+                    isLongDescription && isClamped ? "max-h-64 overflow-hidden" : ""
+                  }`}
+                >
+                  <MarkdownRenderer content={detail.job_description} />
+                </div>
+
+                {/* Bottom gradient fade when clamped */}
+                {isLongDescription && isClamped && (
+                  <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-surface to-transparent pointer-events-none" />
+                )}
+              </div>
+
+              {/* Retract / Expand Content Button */}
+              {isLongDescription && (
+                <div className="flex justify-center pt-1 border-t border-outline-variant/20">
+                  <button
+                    type="button"
+                    onClick={() => setIsClamped(!isClamped)}
+                    className="px-3.5 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-xs font-semibold text-primary hover:text-primary/90 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <span className="material-symbols-outlined text-sm">
+                      {isClamped ? "expand_more" : "expand_less"}
+                    </span>
+                    {isClamped ? "Expand Description" : "Retract Description"}
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
-            <p className="italic text-on-surface-variant/60">
+            <p className="italic text-xs text-on-surface-variant/60">
               No job description recorded. Click Edit to add responsibilities and requirements.
             </p>
           )}

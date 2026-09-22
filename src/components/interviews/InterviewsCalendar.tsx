@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Application, EnrichedInterview } from "@/types/database";
 import { CreateInterviewInput } from "@/lib/services/interviewsService";
+import { toLocalDateString } from "@/lib/utils/date";
 import {
   createInterviewAction,
   updateInterviewAction,
@@ -37,9 +38,10 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
   // Selected date for schedule sidebar
   const [selectedDateStr, setSelectedDateStr] = useState<string>(() => {
     if (initialInterviews.length > 0) {
-      return initialInterviews[0].scheduled_at.split("T")[0];
+      const local = toLocalDateString(initialInterviews[0].scheduled_at);
+      if (local) return local;
     }
-    return new Date().toISOString().split("T")[0];
+    return toLocalDateString(new Date());
   });
 
   const [viewMode, setViewMode] = useState<"month" | "week" | "day">("month");
@@ -105,7 +107,7 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
   const handleToday = () => {
     const today = new Date();
     setViewDate(new Date(today.getFullYear(), today.getMonth(), 1));
-    setSelectedDateStr(today.toISOString().split("T")[0]);
+    setSelectedDateStr(toLocalDateString(today));
   };
 
   // Month metadata
@@ -117,9 +119,11 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
   const interviewsByDate = useMemo(() => {
     const map: Record<string, EnrichedInterview[]> = {};
     for (const interview of interviews) {
-      const datePart = interview.scheduled_at.split("T")[0];
-      if (!map[datePart]) map[datePart] = [];
-      map[datePart].push(interview);
+      const datePart = toLocalDateString(interview.scheduled_at);
+      if (datePart) {
+        if (!map[datePart]) map[datePart] = [];
+        map[datePart].push(interview);
+      }
     }
     return map;
   }, [interviews]);
@@ -136,7 +140,7 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
     for (let i = firstDayOfWeek - 1; i >= 0; i--) {
       const dayNum = daysInPrevMonth - i;
       const prevMonthDate = new Date(currentYear, currentMonthIdx - 1, dayNum);
-      const dateStr = prevMonthDate.toISOString().split("T")[0];
+      const dateStr = toLocalDateString(prevMonthDate);
       cells.push({
         dayNum,
         dateStr,
@@ -148,10 +152,7 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
     // Current month days
     for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
       const cellDate = new Date(currentYear, currentMonthIdx, dayNum);
-      const y = cellDate.getFullYear();
-      const m = String(cellDate.getMonth() + 1).padStart(2, "0");
-      const d = String(dayNum).padStart(2, "0");
-      const dateStr = `${y}-${m}-${d}`;
+      const dateStr = toLocalDateString(cellDate);
       cells.push({
         dayNum,
         dateStr,
@@ -164,7 +165,7 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
     const remaining = 42 - cells.length;
     for (let dayNum = 1; dayNum <= remaining; dayNum++) {
       const nextMonthDate = new Date(currentYear, currentMonthIdx + 1, dayNum);
-      const dateStr = nextMonthDate.toISOString().split("T")[0];
+      const dateStr = toLocalDateString(nextMonthDate);
       cells.push({
         dayNum,
         dateStr,
@@ -176,7 +177,6 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
     return cells;
   }, [currentYear, currentMonthIdx, interviewsByDate]);
 
-  // Create Interview submit handler
   // Create Interview submit handler
   const handleScheduleSubmit = async (data: import("./ScheduleInterviewModal").ScheduleInterviewData) => {
     if (isSubmitting) return;
@@ -202,7 +202,7 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
         };
         setInterviews((prev) => [...prev, enriched]);
         setShowScheduleModal(false);
-        setSelectedDateStr(data.scheduledAt.split("T")[0]);
+        setSelectedDateStr(toLocalDateString(data.scheduledAt) || toLocalDateString(new Date()));
       }
     } finally {
       setIsSubmitting(false);
