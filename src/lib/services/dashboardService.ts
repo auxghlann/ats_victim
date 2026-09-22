@@ -27,9 +27,9 @@ export async function getDashboardMetrics(userId: string): Promise<DashboardMetr
 
   const now = new Date();
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const sevenDaysAgo = new Date(now);
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-  const sevenDaysAgoStr = sevenDaysAgo.toISOString().split("T")[0];
+  const dayOfWeek = now.getUTCDay();
+  const sunday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOfWeek));
+  const sundayStr = sunday.toISOString().split("T")[0];
 
   const [counts, recent, pendingTasksCount, recentActivityRows] = await Promise.all([
     applicationsRepository.getStatusCounts(userId),
@@ -39,10 +39,10 @@ export async function getDashboardMetrics(userId: string): Promise<DashboardMetr
       sortOrder: "desc",
     }),
     tasksRepository.getPendingTasksCount(userId),
-    applicationsRepository.getWeeklyActivityDates(userId, sevenDaysAgoStr),
+    applicationsRepository.getWeeklyActivityDates(userId, sundayStr),
   ]);
 
-  // Aggregate 7-day activity in-memory
+  // Aggregate static week activity in-memory
   const dayCounts = new Map<string, number>();
   for (const row of recentActivityRows) {
     const target = row.last_activity_date || row.date_applied;
@@ -52,13 +52,11 @@ export async function getDashboardMetrics(userId: string): Promise<DashboardMetr
   }
 
   const weeklyActivity = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(Date.UTC(sunday.getUTCFullYear(), sunday.getUTCMonth(), sunday.getUTCDate() + i));
     const dateStr = d.toISOString().split("T")[0];
-    const dayLabel = days[d.getDay()];
     weeklyActivity.push({
-      day: dayLabel,
+      day: days[i],
       date: dateStr,
       count: dayCounts.get(dateStr) || 0,
     });

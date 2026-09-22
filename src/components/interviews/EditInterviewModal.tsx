@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Application, EnrichedInterview } from "@/types/database";
+import { toLocalDatetimeString, toIsoUtcString } from "@/lib/utils/date";
 
 export interface EditInterviewData {
   applicationId: string;
@@ -33,7 +34,7 @@ export function EditInterviewModal({
   );
   const [roundName, setRoundName] = useState(interview.round_name || "");
   const [dateTime, setDateTime] = useState(
-    interview.scheduled_at ? interview.scheduled_at.slice(0, 16) : ""
+    interview.scheduled_at ? toLocalDatetimeString(interview.scheduled_at) : ""
   );
   const [meetingLink, setMeetingLink] = useState(interview.meeting_link || "");
   const [notes, setNotes] = useState(interview.notes || "");
@@ -43,7 +44,7 @@ export function EditInterviewModal({
     setPrevInterview(interview);
     setApplicationId(interview.application_id || applications[0]?.id || "");
     setRoundName(interview.round_name || "");
-    setDateTime(interview.scheduled_at ? interview.scheduled_at.slice(0, 16) : "");
+    setDateTime(interview.scheduled_at ? toLocalDatetimeString(interview.scheduled_at) : "");
     setMeetingLink(interview.meeting_link || "");
     setNotes(interview.notes || "");
   }
@@ -57,7 +58,7 @@ export function EditInterviewModal({
     await onSubmit({
       applicationId,
       roundName: roundName.trim(),
-      scheduledAt: dateTime,
+      scheduledAt: toIsoUtcString(dateTime),
       meetingLink: meetingLink.trim() || null,
       notes: notes.trim() || null,
     });

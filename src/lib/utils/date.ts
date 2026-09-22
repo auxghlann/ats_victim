@@ -42,3 +42,40 @@ export function formatRelativeDate(dateInput: string | null | undefined): string
   const years = Math.floor(diffDays / 365);
   return years === 1 ? "1 year ago" : `${years} years ago`;
 }
+
+/**
+ * Formats a Date or date string to YYYY-MM-DD in local time.
+ */
+export function toLocalDateString(dateInput: string | Date | null | undefined): string {
+  if (!dateInput) return "";
+  const d = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+  if (isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/**
+ * Formats a Date or date string to YYYY-MM-DDTHH:mm in local time for datetime-local inputs.
+ */
+export function toLocalDatetimeString(dateInput: string | Date | null | undefined): string {
+  if (!dateInput) return "";
+  const d = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+  if (isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${y}-${m}-${day}T${hours}:${minutes}`;
+}
+
+/**
+ * Converts a local datetime string (e.g. from input[type="datetime-local"]) to an ISO 8601 UTC string.
+ */
+export function toIsoUtcString(localDatetimeStr: string): string {
+  if (!localDatetimeStr) return "";
+  const d = new Date(localDatetimeStr);
+  return !isNaN(d.getTime()) ? d.toISOString() : localDatetimeStr;
+}
