@@ -67,13 +67,13 @@ export function CalendarGrid({
   return (
     <div className="bg-surface rounded-2xl border border-outline-variant/40 shadow-sm overflow-hidden">
       {/* Header bar with Subtitle & Active Rounds counter */}
-      <div className="p-4 border-b border-outline-variant/30 flex items-center justify-between">
-        <h2 className="text-base font-bold text-on-surface">
+      <div className="p-3.5 sm:p-4 border-b border-outline-variant/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <h2 className="text-sm sm:text-base font-bold text-on-surface">
           {viewMode === "month" && monthName}
           {viewMode === "week" && `Week of ${weekDays[0].dateStr} - ${weekDays[6].dateStr}`}
           {viewMode === "day" && formattedDayDate}
         </h2>
-        <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+        <span className="text-[11px] sm:text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full w-fit">
           {viewMode === "day"
             ? `${dayEvents.length} ${dayEvents.length === 1 ? "round" : "rounds"} on this day`
             : `${totalMonthEvents} ${totalMonthEvents === 1 ? "round" : "rounds"} scheduled`}
@@ -88,7 +88,7 @@ export function CalendarGrid({
             {WEEKDAYS.map((day) => (
               <div
                 key={day}
-                className="py-2.5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider"
+                className="py-2 sm:py-2.5 text-[10px] sm:text-[11px] font-bold text-on-surface-variant uppercase tracking-wider"
               >
                 {day}
               </div>
@@ -106,7 +106,7 @@ export function CalendarGrid({
                 <div
                   key={`${cell.dateStr}-${idx}`}
                   onClick={() => onSelectDate(cell.dateStr)}
-                  className={`min-h-[100px] p-2 transition-colors cursor-pointer flex flex-col justify-between ${
+                  className={`min-h-[58px] sm:min-h-[100px] p-1 sm:p-2 transition-colors cursor-pointer flex flex-col justify-between ${
                     !cell.isCurrentMonth
                       ? "bg-surface-container-lowest text-on-surface-variant/40"
                       : isSelected
@@ -116,7 +116,7 @@ export function CalendarGrid({
                 >
                   <div className="flex justify-between items-start">
                     <span
-                      className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center ${
+                      className={`text-[11px] sm:text-xs font-bold w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center ${
                         isToday
                           ? "bg-primary text-on-primary"
                           : isSelected
@@ -129,13 +129,26 @@ export function CalendarGrid({
                       {cell.dayNum}
                     </span>
 
+                    {/* Desktop indicator dot */}
                     {hasEvents && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-1.5 mr-0.5" />
+                      <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-1.5 mr-0.5" />
                     )}
                   </div>
 
-                  {/* Event Pills */}
-                  <div className="space-y-1 mt-1.5">
+                  {/* Mobile Compact Event Badges (dots/count) */}
+                  {hasEvents && (
+                    <div className="sm:hidden flex items-center justify-center gap-0.5 mt-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                      {cell.events.length > 1 && (
+                        <span className="text-[9px] font-bold text-primary leading-none">
+                          {cell.events.length}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Desktop Event Pills */}
+                  <div className="hidden sm:block space-y-1 mt-1.5">
                     {cell.events.slice(0, 2).map((ev) => (
                       <div
                         key={ev.id}
@@ -160,77 +173,79 @@ export function CalendarGrid({
 
       {/* 2. WEEK VIEW */}
       {viewMode === "week" && (
-        <div className="grid grid-cols-7 divide-x divide-outline-variant/20 min-h-[380px]">
-          {weekDays.map((col) => {
-            const isToday = col.dateStr === todayStr;
-            const isSelected = col.dateStr === selectedDateStr;
+        <div className="overflow-x-auto">
+          <div className="grid grid-cols-7 divide-x divide-outline-variant/20 min-h-[380px] min-w-[560px] sm:min-w-0">
+            {weekDays.map((col) => {
+              const isToday = col.dateStr === todayStr;
+              const isSelected = col.dateStr === selectedDateStr;
 
-            return (
-              <div
-                key={col.dateStr}
-                onClick={() => onSelectDate(col.dateStr)}
-                className={`p-2.5 flex flex-col justify-between transition-colors cursor-pointer ${
-                  isSelected
-                    ? "bg-primary/5 ring-1 ring-primary/40 inset-0"
-                    : "bg-surface hover:bg-surface-container-low"
-                }`}
-              >
-                {/* Column Day Header */}
-                <div className="text-center pb-3 border-b border-outline-variant/20">
-                  <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider block">
-                    {col.dayLabel}
-                  </span>
-                  <span
-                    className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold mt-1 ${
-                      isToday
-                        ? "bg-primary text-on-primary"
-                        : isSelected
-                        ? "bg-primary/20 text-primary font-extrabold"
-                        : "text-on-surface"
-                    }`}
-                  >
-                    {col.dayNum}
-                  </span>
-                </div>
+              return (
+                <div
+                  key={col.dateStr}
+                  onClick={() => onSelectDate(col.dateStr)}
+                  className={`p-2.5 flex flex-col justify-between transition-colors cursor-pointer ${
+                    isSelected
+                      ? "bg-primary/5 ring-1 ring-primary/40 inset-0"
+                      : "bg-surface hover:bg-surface-container-low"
+                  }`}
+                >
+                  {/* Column Day Header */}
+                  <div className="text-center pb-3 border-b border-outline-variant/20">
+                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider block">
+                      {col.dayLabel}
+                    </span>
+                    <span
+                      className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold mt-1 ${
+                        isToday
+                          ? "bg-primary text-on-primary"
+                          : isSelected
+                          ? "bg-primary/20 text-primary font-extrabold"
+                          : "text-on-surface"
+                      }`}
+                    >
+                      {col.dayNum}
+                    </span>
+                  </div>
 
-                {/* Event Cards for this Day */}
-                <div className="flex-1 space-y-2 py-3 overflow-y-auto">
-                  {col.events.map((ev) => {
-                    const time = new Date(ev.scheduled_at).toLocaleTimeString("en-US", {
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true,
-                    });
-                    return (
-                      <div
-                        key={ev.id}
-                        className="p-2 rounded-lg bg-surface-container-low border border-outline-variant/40 space-y-1 shadow-2xs"
-                      >
-                        <p className="text-[10px] font-bold text-primary">{time}</p>
-                        <p className="text-xs font-bold text-on-surface leading-tight truncate">
-                          {ev.company_name || "Interview"}
-                        </p>
-                        <p className="text-[10px] text-on-surface-variant truncate">
-                          {ev.round_name}
-                        </p>
-                      </div>
-                    );
-                  })}
-                  {col.events.length === 0 && (
-                    <p className="text-[10px] italic text-on-surface-variant/40 text-center pt-6">
-                      No rounds
-                    </p>
-                  )}
+                  {/* Event Cards for this Day */}
+                  <div className="flex-1 space-y-2 py-3 overflow-y-auto">
+                    {col.events.map((ev) => {
+                      const time = new Date(ev.scheduled_at).toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      });
+                      return (
+                        <div
+                          key={ev.id}
+                          className="p-2 rounded-lg bg-surface-container-low border border-outline-variant/40 space-y-1 shadow-2xs"
+                        >
+                          <p className="text-[10px] font-bold text-primary">{time}</p>
+                          <p className="text-xs font-bold text-on-surface leading-tight truncate">
+                            {ev.company_name || "Interview"}
+                          </p>
+                          <p className="text-[10px] text-on-surface-variant truncate">
+                            {ev.round_name}
+                          </p>
+                        </div>
+                      );
+                    })}
+                    {col.events.length === 0 && (
+                      <p className="text-[10px] italic text-on-surface-variant/40 text-center pt-6">
+                        No rounds
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 
       {/* 3. DAY VIEW */}
       {viewMode === "day" && (
-        <div className="p-6 min-h-[380px] flex flex-col justify-between">
+        <div className="p-4 sm:p-6 min-h-[380px] flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-outline-variant/30">
               <div>

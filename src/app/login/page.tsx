@@ -152,7 +152,7 @@ function LoginContent() {
         </div>
 
         {/* Right Section: Sign-In Authentication Card */}
-        <div className="w-full max-w-[420px] sm:max-w-[440px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-slate-100/90 p-8 sm:p-12 text-center transition-all">
+        <div className="w-full max-w-[420px] sm:max-w-[440px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-slate-100/90 p-6 sm:p-12 text-center transition-all">
           {/* Mascot Centerpiece */}
           <Image
             src="/ats-victim-logo.png"
@@ -166,7 +166,7 @@ function LoginContent() {
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight mb-2.5">
             Sign in to ATS Victim
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mb-21 leading-relaxed max-w-[300px] mx-auto">
+          <p className="text-xs sm:text-sm text-slate-500 mb-8 leading-relaxed max-w-[300px] mx-auto">
             Manage your job applications, interview timelines, and career milestones in one place.
           </p>
 

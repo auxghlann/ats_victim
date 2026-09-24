@@ -79,7 +79,7 @@ export function AppLayout({ user, children }: AppLayoutProps) {
             className="fixed inset-0 bg-black/50 transition-opacity"
             onClick={() => setMobileNavOpen(false)}
           />
-          <div className="relative z-10 w-72 h-full bg-surface-container shadow-xl">
+          <div className="relative z-10 w-72 max-w-[80vw] h-full bg-surface-container shadow-xl">
             <SideNavBar user={user} onCloseMobile={() => setMobileNavOpen(false)} />
           </div>
         </div>
@@ -88,7 +88,7 @@ export function AppLayout({ user, children }: AppLayoutProps) {
       {/* Main Content Area: Automatically occupies remaining viewport width with zero margin recalculation */}
       <div className="flex-1 flex flex-col min-h-screen min-w-0 w-full">
         {/* Top App Bar */}
-        <header className="sticky top-0 z-20 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30 px-6 py-3.5 flex items-center justify-between">
+        <header className="sticky top-0 z-20 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30 px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileNavOpen(true)}
@@ -185,7 +185,7 @@ export function AppLayout({ user, children }: AppLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 md:p-10 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-10 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>

@@ -7,20 +7,20 @@ interface JobDetailHeaderProps {
 
 export function JobDetailHeader({ app }: JobDetailHeaderProps) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-sm">
-      <div className="flex items-start gap-4">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-sm">
+      <div className="flex items-start gap-3 sm:gap-4 min-w-0">
         {/* Company Avatar */}
-        <div className="w-14 h-14 rounded-2xl bg-surface-container border border-outline-variant/40 flex items-center justify-center font-extrabold text-2xl text-primary shrink-0 shadow-2xs">
+        <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-surface-container border border-outline-variant/40 flex items-center justify-center font-extrabold text-xl sm:text-2xl text-primary shrink-0 shadow-2xs">
           {app.company_name.charAt(0)}
         </div>
 
-        <div>
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <h1 className="text-xl md:text-2xl font-bold text-on-surface tracking-tight">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-on-surface tracking-tight break-words">
               {app.job_title}
             </h1>
             <span
-              className={`px-2.5 py-0.5 rounded-full text-xs font-bold capitalize border ${
+              className={`px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold capitalize border ${
                 STATUS_BADGE_CLASSES[app.status] || "bg-surface-container text-on-surface-variant"
               }`}
             >
@@ -50,7 +50,7 @@ export function JobDetailHeader({ app }: JobDetailHeaderProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 self-end md:self-center">
+      <div className="flex items-center gap-2 self-start md:self-center">
         <Link
           href="/tracker"
           className="px-4 py-2 rounded-xl border border-outline-variant text-xs font-semibold text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5"
