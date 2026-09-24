@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { addNoteAction, updateNoteAction, deleteNoteAction } from "@/app/actions/applicationDetailsAction";
 import { ApplicationDetail, NoteItem } from "@/types/database";
 import { FloatingDropdown } from "@/components/common/FloatingDropdown";
+import { DeleteModal } from "@/components/common/DeleteModal";
 
 interface JobNotesSectionProps {
   applicationId: string;
@@ -18,6 +19,7 @@ interface NoteCardProps {
 function NoteCard({ note, applicationId, onUpdated }: NoteCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [editContent, setEditContent] = useState(note.content);
   const [isSaving, setIsSaving] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -38,16 +40,14 @@ function NoteCard({ note, applicationId, onUpdated }: NoteCardProps) {
     }
   };
 
-  const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this note?")) {
-      try {
-        const updated = await deleteNoteAction(applicationId, note.id);
-        if (updated) {
-          onUpdated(updated);
-        }
-      } catch (err) {
-        console.error("Failed to delete note:", err);
+  const handleConfirmDelete = async () => {
+    try {
+      const updated = await deleteNoteAction(applicationId, note.id);
+      if (updated) {
+        onUpdated(updated);
       }
+    } catch (err) {
+      console.error("Failed to delete note:", err);
     }
   };
 
@@ -91,7 +91,7 @@ function NoteCard({ note, applicationId, onUpdated }: NoteCardProps) {
               type="button"
               onClick={() => {
                 setMenuOpen(false);
-                handleDelete();
+                setIsDeleteOpen(true);
               }}
               className="w-full px-3 py-1.5 text-left text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white active:bg-red-700 flex items-center gap-2 cursor-pointer transition-colors rounded-lg group/del"
             >
@@ -143,6 +143,14 @@ function NoteCard({ note, applicationId, onUpdated }: NoteCardProps) {
           {note.content}
         </p>
       )}
+
+      <DeleteModal
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Note"
+        description="Are you sure you want to delete this note? This action cannot be undone."
+      />
     </div>
   );
 }

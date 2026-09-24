@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Application, STATUS_BADGE_CLASSES } from "@/types/database";
 import { formatRelativeDate } from "@/lib/utils/date";
+import { formatSalaryRange } from "@/lib/utils/currency";
 import { FloatingDropdown } from "@/components/common/FloatingDropdown";
 
 interface TrackerTableRowProps {
@@ -33,15 +34,7 @@ export function TrackerTableRow({
   };
 
   // Format Salary
-  const salaryText = (() => {
-    if (app.salary_min && app.salary_max) {
-      return `$${Math.round(app.salary_min / 1000)}k - $${Math.round(app.salary_max / 1000)}k`;
-    }
-    if (app.salary_min) {
-      return `From $${Math.round(app.salary_min / 1000)}k`;
-    }
-    return "Undisclosed";
-  })();
+  const salaryText = formatSalaryRange(app.salary_min, app.salary_max, app.salary_currency);
 
   const relativeActivityDate = formatRelativeDate(app.last_activity_date || app.created_at || "");
 

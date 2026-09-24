@@ -11,6 +11,7 @@ import {
 import { CreateTaskModal } from "@/components/tasks/CreateTaskModal";
 import { EditTaskModal } from "@/components/tasks/EditTaskModal";
 import { FloatingDropdown } from "@/components/common/FloatingDropdown";
+import { DeleteModal } from "@/components/common/DeleteModal";
 
 const PRIORITY_BADGES: Record<TaskPriority, { bg: string; text: string; border: string }> = {
   high: { bg: "bg-error/10", text: "text-error", border: "border-error/20" },
@@ -149,6 +150,7 @@ export function JobTasksSection({
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<EnrichedTask | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const pendingCount = tasks.filter((t) => !Boolean(t.completed)).length;
@@ -168,16 +170,21 @@ export function JobTasksSection({
     }
   };
 
-  const handleDelete = async (taskId: string) => {
-    if (confirm("Are you sure you want to delete this task?")) {
-      const prevTasks = [...tasks];
-      setTasks((prev) => prev.filter((t) => t.id !== taskId));
-      try {
-        await deleteTaskAction(taskId, application.id);
-      } catch (err) {
-        console.error("Failed to delete task:", err);
-        setTasks(prevTasks);
-      }
+  const handleDelete = (taskId: string) => {
+    const task = tasks.find((t) => t.id === taskId) || null;
+    setTaskToDelete(task);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!taskToDelete) return;
+    const taskId = taskToDelete.id;
+    const prevTasks = [...tasks];
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    try {
+      await deleteTaskAction(taskId, application.id);
+    } catch (err) {
+      console.error("Failed to delete task:", err);
+      setTasks(prevTasks);
     }
   };
 
@@ -286,6 +293,14 @@ export function JobTasksSection({
           }}
         />
       )}
+
+      <DeleteModal
+        isOpen={Boolean(taskToDelete)}
+        onClose={() => setTaskToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Task"
+        itemName={taskToDelete?.title}
+      />
     </div>
   );
 }

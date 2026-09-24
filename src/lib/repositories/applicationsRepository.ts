@@ -118,7 +118,7 @@ export async function createApplication(
     work_setup: data.work_setup || null,
     salary_min: data.salary_min ?? null,
     salary_max: data.salary_max ?? null,
-    salary_currency: data.salary_currency || "USD",
+    salary_currency: data.salary_currency || "PHP",
     date_applied: dateApplied,
     last_activity_date: dateApplied,
     created_at: now,

@@ -14,6 +14,7 @@ import { CalendarGrid, CalendarCell } from "./CalendarGrid";
 import { DateSchedulePanel } from "./DateSchedulePanel";
 import { ScheduleInterviewModal } from "./ScheduleInterviewModal";
 import { EditInterviewModal } from "./EditInterviewModal";
+import { DeleteModal } from "@/components/common/DeleteModal";
 
 interface InterviewsCalendarProps {
   initialInterviews: EnrichedInterview[];
@@ -54,6 +55,7 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingInterview, setEditingInterview] = useState<EnrichedInterview | null>(null);
   const [isUpdatingInterview, setIsUpdatingInterview] = useState(false);
+  const [interviewToDelete, setInterviewToDelete] = useState<EnrichedInterview | null>(null);
 
   // Dynamic navigation handlers for Month, Week, and Day
   const handlePrev = () => {
@@ -247,7 +249,14 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
   };
 
   // Delete Interview handler
-  const handleDeleteInterview = async (interviewId: string) => {
+  const handleDeleteInterview = (interviewId: string) => {
+    const interview = interviews.find((i) => i.id === interviewId) || null;
+    setInterviewToDelete(interview);
+  };
+
+  const handleConfirmDeleteInterview = async () => {
+    if (!interviewToDelete) return;
+    const interviewId = interviewToDelete.id;
     const originalInterviews = interviews;
     setInterviews((prev) => prev.filter((i) => i.id !== interviewId));
 
@@ -328,6 +337,18 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
           isSubmitting={isUpdatingInterview}
         />
       )}
+
+      <DeleteModal
+        isOpen={Boolean(interviewToDelete)}
+        onClose={() => setInterviewToDelete(null)}
+        onConfirm={handleConfirmDeleteInterview}
+        title="Delete Interview"
+        itemName={
+          interviewToDelete
+            ? `${interviewToDelete.round_name || "Interview"} with ${interviewToDelete.company_name}`
+            : undefined
+        }
+      />
     </div>
   );
 }

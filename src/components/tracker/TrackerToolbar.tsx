@@ -72,7 +72,7 @@ export function TrackerToolbar({
             <select
               value={selectedStatus}
               onChange={(e) => onStatusChange(e.target.value)}
-              className="w-full appearance-none pl-7 sm:pl-8 pr-6 sm:pr-8 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-[11px] sm:text-xs font-medium text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer truncate"
+              className="w-full appearance-none pl-7 sm:pl-8 pr-7 sm:pr-9 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-[11px] sm:text-xs font-medium text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer truncate"
             >
               <option value="all">All Statuses</option>
               <option value="applied">Applied</option>
@@ -84,7 +84,7 @@ export function TrackerToolbar({
             <span className="material-symbols-outlined absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-xs sm:text-sm pointer-events-none">
               filter_list
             </span>
-            <span className="material-symbols-outlined absolute right-1.5 sm:right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-xs sm:text-sm pointer-events-none">
+            <span className="material-symbols-outlined absolute right-2.5 sm:right-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-xs sm:text-sm pointer-events-none">
               expand_more
             </span>
           </div>
@@ -94,7 +94,7 @@ export function TrackerToolbar({
             <select
               value={selectedWorkSetup}
               onChange={(e) => onWorkSetupChange(e.target.value)}
-              className="w-full appearance-none pl-7 sm:pl-8 pr-6 sm:pr-8 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-[11px] sm:text-xs font-medium text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer truncate"
+              className="w-full appearance-none pl-7 sm:pl-8 pr-7 sm:pr-9 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-[11px] sm:text-xs font-medium text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer truncate"
             >
               <option value="all">All Setups</option>
               <option value="remote">Remote</option>
@@ -104,7 +104,7 @@ export function TrackerToolbar({
             <span className="material-symbols-outlined absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-xs sm:text-sm pointer-events-none">
               location_on
             </span>
-            <span className="material-symbols-outlined absolute right-1.5 sm:right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-xs sm:text-sm pointer-events-none">
+            <span className="material-symbols-outlined absolute right-2.5 sm:right-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-xs sm:text-sm pointer-events-none">
               expand_more
             </span>
           </div>

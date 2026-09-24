@@ -28,7 +28,7 @@ export function JobDetailView({
   return (
     <div className="space-y-6">
       {/* 1. Hero Job Header */}
-      <JobDetailHeader app={app} />
+      <JobDetailHeader app={app} postingUrl={detail?.posting_url} />
 
       {/* 2. Visual Status Stepper */}
       <PipelineStepper status={app.status} />

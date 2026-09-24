@@ -46,17 +46,6 @@ export function JobDescriptionSection({
         <h2 className="text-sm font-bold text-on-surface">Job Description</h2>
 
         <div className="flex items-center gap-2">
-          {detail?.posting_url && (
-            <a
-              href={detail.posting_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
-            >
-              Original Posting
-              <span className="material-symbols-outlined text-xs">open_in_new</span>
-            </a>
-          )}
           <button
             type="button"
             onClick={() => {

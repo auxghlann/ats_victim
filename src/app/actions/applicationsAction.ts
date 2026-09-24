@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
 import { applicationsService, CreateApplicationInput } from "@/lib/services/applicationsService";
+import { applicationDetailsRepository } from "@/lib/repositories/applicationDetailsRepository";
 import { ListApplicationsOptions } from "@/lib/repositories/applicationsRepository";
 import { ApplicationStatus, Application } from "@/types/database";
 
@@ -39,14 +40,29 @@ export async function updateApplicationStatusAction(
   return updated;
 }
 
+export async function getApplicationDetailAction(applicationId: string) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  return applicationsService.getApplicationDetail(user.id, applicationId);
+}
+
 export async function updateApplicationAction(
   applicationId: string,
-  updates: Partial<Application>
+  updates: Partial<Application> & { posting_url?: string | null }
 ) {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
 
-  const updated = await applicationsService.updateApplication(user.id, applicationId, updates);
+  const { posting_url, ...appUpdates } = updates;
+  const updated = await applicationsService.updateApplication(user.id, applicationId, appUpdates);
+
+  if (posting_url !== undefined) {
+    await applicationDetailsRepository.upsertApplicationDetails(applicationId, {
+      posting_url: posting_url?.trim() || null,
+    });
+  }
+
   revalidatePath("/tracker");
   revalidatePath(`/tracker/${applicationId}`);
   revalidatePath("/");

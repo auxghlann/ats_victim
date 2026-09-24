@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Application, ApplicationStatus, WorkSetup } from "@/types/database";
-import { updateApplicationAction } from "@/app/actions/applicationsAction";
+import { updateApplicationAction, getApplicationDetailAction } from "@/app/actions/applicationsAction";
+import { SUPPORTED_CURRENCIES } from "@/lib/utils/currency";
 
 interface EditApplicationModalProps {
   application: Application | null;
@@ -28,7 +29,23 @@ export function EditApplicationModal({
     work_setup: ((application?.work_setup as WorkSetup) || "remote") as WorkSetup,
     salary_min: application?.salary_min ? String(application?.salary_min) : "",
     salary_max: application?.salary_max ? String(application?.salary_max) : "",
+    salary_currency: application?.salary_currency || "PHP",
+    posting_url: "",
   });
+
+  const appId = application?.id;
+  useEffect(() => {
+    if (!appId) return;
+    let active = true;
+    getApplicationDetailAction(appId).then((res) => {
+      if (active && res?.detail?.posting_url) {
+        setFormData((prev) => ({ ...prev, posting_url: res.detail?.posting_url || "" }));
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [appId]);
 
   const [prevApp, setPrevApp] = useState(application);
   if (application && application !== prevApp) {
@@ -41,6 +58,8 @@ export function EditApplicationModal({
       work_setup: ((application.work_setup as WorkSetup) || "remote") as WorkSetup,
       salary_min: application.salary_min ? String(application.salary_min) : "",
       salary_max: application.salary_max ? String(application.salary_max) : "",
+      salary_currency: application.salary_currency || "PHP",
+      posting_url: "",
     });
     setError(null);
   }
@@ -66,6 +85,8 @@ export function EditApplicationModal({
         work_setup: formData.work_setup,
         salary_min: formData.salary_min ? Number(formData.salary_min) : null,
         salary_max: formData.salary_max ? Number(formData.salary_max) : null,
+        salary_currency: formData.salary_currency || "PHP",
+        posting_url: formData.posting_url.trim() || null,
       });
 
       onSuccess();
@@ -153,35 +174,45 @@ export function EditApplicationModal({
               <label className="block text-xs font-semibold text-on-surface mb-1.5">
                 Status
               </label>
-              <select
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value as ApplicationStatus })
-                }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all capitalize"
-              >
-                <option value="applied">Applied</option>
-                <option value="viewed">Viewed</option>
-                <option value="interview">Interview</option>
-                <option value="accepted">Offer Accepted</option>
-                <option value="rejected">Rejected</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value as ApplicationStatus })
+                  }
+                  className="w-full appearance-none pl-3.5 pr-9 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all capitalize cursor-pointer"
+                >
+                  <option value="applied">Applied</option>
+                  <option value="viewed">Viewed</option>
+                  <option value="interview">Interview</option>
+                  <option value="accepted">Offer Accepted</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+                <span className="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-base pointer-events-none">
+                  expand_more
+                </span>
+              </div>
             </div>
             <div>
               <label className="block text-xs font-semibold text-on-surface mb-1.5">
                 Work Setup
               </label>
-              <select
-                value={formData.work_setup}
-                onChange={(e) =>
-                  setFormData({ ...formData, work_setup: e.target.value as WorkSetup })
-                }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all capitalize"
-              >
-                <option value="remote">Remote</option>
-                <option value="hybrid">Hybrid</option>
-                <option value="on-site">On-site</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={formData.work_setup}
+                  onChange={(e) =>
+                    setFormData({ ...formData, work_setup: e.target.value as WorkSetup })
+                  }
+                  className="w-full appearance-none pl-3.5 pr-9 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all capitalize cursor-pointer"
+                >
+                  <option value="remote">Remote</option>
+                  <option value="hybrid">Hybrid</option>
+                  <option value="on-site">On-site</option>
+                </select>
+                <span className="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-base pointer-events-none">
+                  expand_more
+                </span>
+              </div>
             </div>
           </div>
 
@@ -199,15 +230,36 @@ export function EditApplicationModal({
             />
           </div>
 
-          {/* Row 4: Salary Min & Max */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Row 4: Salary & Currency */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-on-surface mb-1.5">
-                Salary Min ($/year)
+                Currency
+              </label>
+              <div className="relative">
+                <select
+                  value={formData.salary_currency}
+                  onChange={(e) => setFormData({ ...formData, salary_currency: e.target.value })}
+                  className="w-full appearance-none pl-3.5 pr-9 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer"
+                >
+                  {SUPPORTED_CURRENCIES.map((curr) => (
+                    <option key={curr.code} value={curr.code}>
+                      {curr.label}
+                    </option>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-base pointer-events-none">
+                  expand_more
+                </span>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-on-surface mb-1.5">
+                Salary Min
               </label>
               <input
                 type="number"
-                placeholder="120000"
+                placeholder="50000"
                 value={formData.salary_min}
                 onChange={(e) => setFormData({ ...formData, salary_min: e.target.value })}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all"
@@ -215,16 +267,30 @@ export function EditApplicationModal({
             </div>
             <div>
               <label className="block text-xs font-semibold text-on-surface mb-1.5">
-                Salary Max ($/year)
+                Salary Max
               </label>
               <input
                 type="number"
-                placeholder="160000"
+                placeholder="80000"
                 value={formData.salary_max}
                 onChange={(e) => setFormData({ ...formData, salary_max: e.target.value })}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all"
               />
             </div>
+          </div>
+
+          {/* Row 5: Posting URL */}
+          <div>
+            <label className="block text-xs font-semibold text-on-surface mb-1.5">
+              Posting URL
+            </label>
+            <input
+              type="url"
+              placeholder="https://..."
+              value={formData.posting_url}
+              onChange={(e) => setFormData({ ...formData, posting_url: e.target.value })}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+            />
           </div>
 
           {/* Footer Actions */}

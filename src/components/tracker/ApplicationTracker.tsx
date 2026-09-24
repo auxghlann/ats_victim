@@ -9,6 +9,7 @@ import {
 } from "@/app/actions/applicationsAction";
 import { AddApplicationModal } from "./AddApplicationModal";
 import { EditApplicationModal } from "./EditApplicationModal";
+import { DeleteModal } from "@/components/common/DeleteModal";
 import { exportApplicationsToCsv } from "@/lib/utils/export";
 import { TrackerToolbar } from "./TrackerToolbar";
 import { TrackerTableHeader } from "./TrackerTableHeader";
@@ -41,6 +42,7 @@ export function ApplicationTracker({
   // Modals & Menu State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingApp, setEditingApp] = useState<Application | null>(null);
+  const [appToDelete, setAppToDelete] = useState<Application | null>(null);
   const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [syncToast, setSyncToast] = useState<string | null>(null);
@@ -97,11 +99,14 @@ export function ApplicationTracker({
     setPage(1);
   };
 
-  const handleDelete = async (app: Application) => {
-    if (confirm(`Are you sure you want to delete ${app.company_name}?`)) {
-      await deleteApplicationAction(app.id);
-      loadData();
-    }
+  const handleDelete = (app: Application) => {
+    setAppToDelete(app);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!appToDelete) return;
+    await deleteApplicationAction(appToDelete.id);
+    loadData();
   };
 
   const handleExportCsv = async () => {
@@ -253,6 +258,14 @@ export function ApplicationTracker({
           }}
         />
       )}
+
+      <DeleteModal
+        isOpen={Boolean(appToDelete)}
+        onClose={() => setAppToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Application"
+        itemName={appToDelete?.company_name}
+      />
     </div>
   );
 }
