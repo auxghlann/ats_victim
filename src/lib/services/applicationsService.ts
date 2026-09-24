@@ -16,6 +16,7 @@ export interface CreateApplicationInput {
   work_setup?: WorkSetup;
   salary_min?: number;
   salary_max?: number;
+  salary_currency?: string;
   posting_url?: string;
   job_description?: string;
   notes?: string;
@@ -72,6 +73,7 @@ export async function createApplication(
     work_setup: input.work_setup || null,
     salary_min: input.salary_min ?? null,
     salary_max: input.salary_max ?? null,
+    salary_currency: input.salary_currency || "PHP",
   });
 
   const today = new Date().toISOString().split("T")[0];

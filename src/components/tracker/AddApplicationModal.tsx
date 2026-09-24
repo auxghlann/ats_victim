@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ApplicationStatus } from "@/types/database";
 import { createApplicationAction } from "@/app/actions/applicationsAction";
+import { SUPPORTED_CURRENCIES } from "@/lib/utils/currency";
 
 interface AddApplicationModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export function AddApplicationModal({
     work_setup: "remote" as import("@/types/database").WorkSetup,
     salary_min: "",
     salary_max: "",
+    salary_currency: "PHP",
     posting_url: "",
     job_description: "",
     notes: "",
@@ -52,6 +54,7 @@ export function AddApplicationModal({
         work_setup: formData.work_setup,
         salary_min: formData.salary_min ? Number(formData.salary_min) : undefined,
         salary_max: formData.salary_max ? Number(formData.salary_max) : undefined,
+        salary_currency: formData.salary_currency || "PHP",
         posting_url: formData.posting_url.trim() || undefined,
         job_description: formData.job_description.trim() || undefined,
         notes: formData.notes.trim() || undefined,
@@ -147,22 +150,27 @@ export function AddApplicationModal({
               <label className="block text-xs font-semibold text-on-surface mb-1.5">
                 Status
               </label>
-              <select
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    status: e.target.value as ApplicationStatus,
-                  })
-                }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all capitalize shadow-2xs cursor-pointer"
-              >
-                <option value="applied">Applied</option>
-                <option value="viewed">Viewed</option>
-                <option value="interview">Interview</option>
-                <option value="accepted">Accepted</option>
-                <option value="rejected">Rejected</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      status: e.target.value as ApplicationStatus,
+                    })
+                  }
+                  className="w-full appearance-none pl-3.5 pr-9 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all capitalize shadow-2xs cursor-pointer"
+                >
+                  <option value="applied">Applied</option>
+                  <option value="viewed">Viewed</option>
+                  <option value="interview">Interview</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+                <span className="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-base pointer-events-none">
+                  expand_more
+                </span>
+              </div>
             </div>
 
             <div>
@@ -184,31 +192,60 @@ export function AddApplicationModal({
               <label className="block text-xs font-semibold text-on-surface mb-1.5">
                 Work Setup
               </label>
-              <select
-                value={formData.work_setup}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    work_setup: e.target.value as import("@/types/database").WorkSetup,
-                  })
-                }
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all capitalize shadow-2xs cursor-pointer"
-              >
-                <option value="remote">Remote</option>
-                <option value="hybrid">Hybrid</option>
-                <option value="on-site">On-site</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={formData.work_setup}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      work_setup: e.target.value as import("@/types/database").WorkSetup,
+                    })
+                  }
+                  className="w-full appearance-none pl-3.5 pr-9 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all capitalize shadow-2xs cursor-pointer"
+                >
+                  <option value="remote">Remote</option>
+                  <option value="hybrid">Hybrid</option>
+                  <option value="on-site">On-site</option>
+                </select>
+                <span className="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-base pointer-events-none">
+                  expand_more
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-on-surface mb-1.5">
-                Salary Min (USD)
+                Currency
+              </label>
+              <div className="relative">
+                <select
+                  value={formData.salary_currency}
+                  onChange={(e) =>
+                    setFormData({ ...formData, salary_currency: e.target.value })
+                  }
+                  className="w-full appearance-none pl-3.5 pr-9 py-2.5 rounded-xl bg-white border border-outline-variant/60 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary transition-all shadow-2xs cursor-pointer"
+                >
+                  {SUPPORTED_CURRENCIES.map((curr) => (
+                    <option key={curr.code} value={curr.code}>
+                      {curr.label}
+                    </option>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-base pointer-events-none">
+                  expand_more
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-on-surface mb-1.5">
+                Salary Min
               </label>
               <input
                 type="number"
-                placeholder="e.g. 150000"
+                placeholder="e.g. 50000"
                 value={formData.salary_min}
                 onChange={(e) =>
                   setFormData({ ...formData, salary_min: e.target.value })
@@ -219,11 +256,11 @@ export function AddApplicationModal({
 
             <div>
               <label className="block text-xs font-semibold text-on-surface mb-1.5">
-                Salary Max (USD)
+                Salary Max
               </label>
               <input
                 type="number"
-                placeholder="e.g. 210000"
+                placeholder="e.g. 80000"
                 value={formData.salary_max}
                 onChange={(e) =>
                   setFormData({ ...formData, salary_max: e.target.value })

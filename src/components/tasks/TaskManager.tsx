@@ -13,6 +13,7 @@ import { TaskItem } from "./TaskItem";
 import { GeneralTasksSidebar } from "./GeneralTasksSidebar";
 import { CreateTaskModal } from "./CreateTaskModal";
 import { EditTaskModal } from "./EditTaskModal";
+import { DeleteModal } from "@/components/common/DeleteModal";
 
 interface TaskManagerProps {
   initialTasks: EnrichedTask[];
@@ -35,6 +36,7 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTask, setEditingTask] = useState<EnrichedTask | null>(null);
   const [isUpdatingTask, setIsUpdatingTask] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<EnrichedTask | null>(null);
 
   // Toggle Database Task
   const handleToggleTask = async (taskId: string, currentCompleted: boolean | number) => {
@@ -88,7 +90,14 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
   };
 
   // Delete Database Task
-  const handleDeleteTask = async (taskId: string) => {
+  const handleDeleteTask = (taskId: string) => {
+    const task = tasks.find((t) => t.id === taskId) || null;
+    setTaskToDelete(task);
+  };
+
+  const handleConfirmDeleteTask = async () => {
+    if (!taskToDelete) return;
+    const taskId = taskToDelete.id;
     const originalTasks = tasks;
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
 
@@ -181,8 +190,20 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
         </button>
       </div>
 
-      {/* Main Grid: Application Tasks (2 cols) & General Tasks (1 col) */}
+      {/* Main Grid: General Tasks (left, 1 col) & Application Tasks (right, 2 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* General Standalone Tasks */}
+        <GeneralTasksSidebar
+          tasks={tasks}
+          onToggleTask={handleToggleTask}
+          onEditTask={handleOpenEdit}
+          onDeleteTask={handleDeleteTask}
+          quickTitle={quickTitle}
+          onQuickTitleChange={setQuickTitle}
+          onQuickAdd={handleQuickAdd}
+          isQuickAdding={isQuickAdding}
+        />
+
         {/* Application Linked Tasks */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -225,18 +246,6 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
             )}
           </div>
         </div>
-
-        {/* General Standalone Tasks Sidebar */}
-        <GeneralTasksSidebar
-          tasks={tasks}
-          onToggleTask={handleToggleTask}
-          onEditTask={handleOpenEdit}
-          onDeleteTask={handleDeleteTask}
-          quickTitle={quickTitle}
-          onQuickTitleChange={setQuickTitle}
-          onQuickAdd={handleQuickAdd}
-          isQuickAdding={isQuickAdding}
-        />
       </div>
 
       {/* Create Task Modal */}
@@ -263,6 +272,14 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
           isSubmitting={isUpdatingTask}
         />
       )}
+
+      <DeleteModal
+        isOpen={Boolean(taskToDelete)}
+        onClose={() => setTaskToDelete(null)}
+        onConfirm={handleConfirmDeleteTask}
+        title="Delete Task"
+        itemName={taskToDelete?.title}
+      />
     </div>
   );
 }
