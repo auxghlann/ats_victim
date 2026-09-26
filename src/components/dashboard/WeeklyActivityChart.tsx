@@ -27,7 +27,7 @@ export function WeeklyActivityChart({ data }: WeeklyActivityChartProps) {
       <div className="flex items-center justify-between mb-4">
         <div>
           <span className="text-xs font-medium text-on-surface-variant">
-            {totalActions} activities recorded this week
+            {totalActions} activities recorded
           </span>
         </div>
         <div className="flex items-center gap-3 text-xs text-on-surface-variant">
@@ -39,20 +39,20 @@ export function WeeklyActivityChart({ data }: WeeklyActivityChartProps) {
       </div>
 
       {/* Chart Canvas with Y-Axis */}
-      <div className="flex-1 flex gap-2">
+      <div className="flex-1 flex gap-1 sm:gap-2">
         {/* Y-Axis Column */}
-        <div className="flex flex-col justify-between items-end pb-8 pt-2 text-[10px] font-semibold text-on-surface-variant/70 select-none w-8 shrink-0">
+        <div className="flex flex-col justify-between items-end pb-8 pt-2 text-[10px] font-semibold text-on-surface-variant/70 select-none w-3.5 sm:w-5 shrink-0">
           <span>{maxVal}</span>
           <span>{midVal}</span>
           <span>0</span>
         </div>
 
         {/* Canvas Area */}
-        <div className="flex-1 min-h-[220px] bg-surface-container-lowest rounded-xl border border-outline-variant/30 flex flex-col justify-between p-4 pb-2 relative select-none">
+        <div className="flex-1 min-h-[220px] bg-surface-container-lowest rounded-xl border border-outline-variant/30 flex flex-col justify-between px-2 sm:px-4 pt-3 sm:pt-4 pb-2 relative select-none">
           {/* Horizontal Guide Lines */}
-          <div className="absolute w-[calc(100%-2rem)] h-px bg-outline-variant/20 top-4 left-4 pointer-events-none" />
-          <div className="absolute w-[calc(100%-2rem)] h-px bg-outline-variant/20 top-1/2 left-4 pointer-events-none" />
-          <div className="absolute w-[calc(100%-2rem)] h-px bg-outline-variant/20 bottom-8 left-4 pointer-events-none" />
+          <div className="absolute w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)] h-px bg-outline-variant/20 top-3 sm:top-4 left-2 sm:left-4 pointer-events-none" />
+          <div className="absolute w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)] h-px bg-outline-variant/20 top-1/2 left-2 sm:left-4 pointer-events-none" />
+          <div className="absolute w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)] h-px bg-outline-variant/20 bottom-8 left-2 sm:left-4 pointer-events-none" />
 
           {/* Bars Container */}
           <div className="flex-1 flex items-end justify-between relative z-10">
@@ -76,22 +76,20 @@ export function WeeklyActivityChart({ data }: WeeklyActivityChartProps) {
                   {/* Bar */}
                   <div
                     style={{ height: `${barHeightPct}%` }}
-                    className={`w-full max-w-[36px] rounded-t-md transition-all duration-200 cursor-pointer ${
-                      item.count > 0
+                    className={`w-full max-w-[36px] rounded-t-md transition-all duration-200 cursor-pointer ${item.count > 0
                         ? isHovered
                           ? "bg-primary shadow-[0_0_12px_rgba(0,88,189,0.4)]"
                           : "bg-primary/80 hover:bg-primary"
                         : isHovered
-                        ? "bg-outline-variant/50"
-                        : "bg-outline-variant/25"
-                    }`}
+                          ? "bg-outline-variant/50"
+                          : "bg-outline-variant/25"
+                      }`}
                   />
 
                   {/* Day Label */}
                   <span
-                    className={`text-xs mt-3 transition-colors ${
-                      isHovered ? "font-bold text-primary" : "text-on-surface-variant font-medium"
-                    }`}
+                    className={`text-xs mt-3 transition-colors ${isHovered ? "font-bold text-primary" : "text-on-surface-variant font-medium"
+                      }`}
                   >
                     {item.day}
                   </span>

@@ -24,8 +24,8 @@ export function JobDetailHeader({ app, postingUrl }: JobDetailHeaderProps) {
       </div>
 
       {/* Main Header Card */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-sm">
-        <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+      <div className="flex items-start justify-between gap-3 sm:gap-4 p-4 sm:p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-sm">
+        <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
           {/* Company Avatar */}
           <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-surface-container border border-outline-variant/40 flex items-center justify-center font-extrabold text-xl sm:text-2xl text-primary shrink-0 shadow-2xs">
             {app.company_name.charAt(0)}
@@ -67,7 +67,7 @@ export function JobDetailHeader({ app, postingUrl }: JobDetailHeaderProps) {
 
         {/* Actions: Original Posting Icon (where Back button was) */}
         {postingUrl && (
-          <div className="flex items-center gap-2 self-start md:self-center shrink-0">
+          <div className="flex items-center gap-2 shrink-0 self-start">
             <a
               href={postingUrl}
               target="_blank"

@@ -72,7 +72,7 @@ export function TrackerToolbar({
             <select
               value={selectedStatus}
               onChange={(e) => onStatusChange(e.target.value)}
-              className="w-full appearance-none pl-7 sm:pl-8 pr-7 sm:pr-9 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-[11px] sm:text-xs font-medium text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer truncate"
+              className="w-full appearance-none pl-8.5 sm:pl-9 pr-7 sm:pr-9 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-[11px] sm:text-xs font-medium text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer truncate"
             >
               <option value="all">All Statuses</option>
               <option value="applied">Applied</option>
@@ -94,7 +94,7 @@ export function TrackerToolbar({
             <select
               value={selectedWorkSetup}
               onChange={(e) => onWorkSetupChange(e.target.value)}
-              className="w-full appearance-none pl-7 sm:pl-8 pr-7 sm:pr-9 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-[11px] sm:text-xs font-medium text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer truncate"
+              className="w-full appearance-none pl-8.5 sm:pl-9 pr-7 sm:pr-9 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-[11px] sm:text-xs font-medium text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer truncate"
             >
               <option value="all">All Setups</option>
               <option value="remote">Remote</option>
