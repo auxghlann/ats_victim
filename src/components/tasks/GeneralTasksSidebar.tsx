@@ -115,7 +115,7 @@ export function GeneralTasksSidebar({
   const generalTasks = tasks.filter((t) => !t.application_id);
 
   return (
-    <div className="bg-surface p-6 rounded-2xl border border-outline-variant/40 shadow-sm flex flex-col justify-between">
+    <div className="bg-surface p-4 sm:p-6 rounded-2xl border border-outline-variant/40 shadow-sm flex flex-col justify-between">
       <div>
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -131,18 +131,18 @@ export function GeneralTasksSidebar({
 
         {/* Quick Add Form */}
         <form onSubmit={onQuickAdd} className="mb-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0 w-full">
             <input
               type="text"
               value={quickTitle}
               onChange={(e) => onQuickTitleChange(e.target.value)}
               placeholder="Quick add general task..."
-              className="flex-1 px-3.5 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/60 transition-all"
+              className="min-w-0 flex-1 px-3.5 py-2 rounded-xl bg-white border border-outline-variant/60 shadow-2xs text-xs text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/60 transition-all"
             />
             <button
               type="submit"
               disabled={isQuickAdding || !quickTitle.trim()}
-              className="px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer shrink-0 flex items-center gap-1 shadow-sm"
+              className="px-3 sm:px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer shrink-0 flex items-center gap-1 shadow-sm"
             >
               <span className="material-symbols-outlined text-sm font-bold">add</span>
               Add
