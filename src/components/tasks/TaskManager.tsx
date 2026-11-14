@@ -11,8 +11,7 @@ import {
 import { TaskFilterTabs } from "./TaskFilterTabs";
 import { TaskItem } from "./TaskItem";
 import { GeneralTasksSidebar } from "./GeneralTasksSidebar";
-import { CreateTaskModal } from "./CreateTaskModal";
-import { EditTaskModal } from "./EditTaskModal";
+import { CreateTaskModal, CreateTaskData } from "./CreateTaskModal";
 import { DeleteModal } from "@/components/common/DeleteModal";
 
 interface TaskManagerProps {
@@ -28,17 +27,12 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
   const [quickTitle, setQuickTitle] = useState("");
   const [isQuickAdding, setIsQuickAdding] = useState(false);
 
-  // New Task Modal State
-  const [showNewTaskModal, setShowNewTaskModal] = useState(false);
-  const [isCreatingTask, setIsCreatingTask] = useState(false);
-
-  // Edit Task Modal State
-  const [showEditModal, setShowEditModal] = useState(false);
+  // Create / Edit Task Modal State
+  const [showTaskModal, setShowTaskModal] = useState(false);
   const [editingTask, setEditingTask] = useState<EnrichedTask | null>(null);
-  const [isUpdatingTask, setIsUpdatingTask] = useState(false);
+  const [isSubmittingTask, setIsSubmittingTask] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<EnrichedTask | null>(null);
 
-  // Toggle Database Task
   const handleToggleTask = async (taskId: string, currentCompleted: boolean | number) => {
     const nextCompleted = !Boolean(currentCompleted);
     setTasks((prev) =>
@@ -54,42 +48,51 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
     }
   };
 
-  // Open Edit Modal
-  const handleOpenEdit = (task: EnrichedTask) => {
-    setEditingTask(task);
-    setShowEditModal(true);
-  };
+  const handleModalSubmit = async (data: CreateTaskData) => {
+    if (isSubmittingTask) return;
 
-  // Save Edit Task
-  const handleSaveEdit = async (data: import("./EditTaskModal").EditTaskData) => {
-    if (!editingTask || isUpdatingTask) return;
-
-    setIsUpdatingTask(true);
+    setIsSubmittingTask(true);
     try {
-      const updated = await updateTaskAction(editingTask.id, {
-        title: data.title,
-        applicationId: data.applicationId,
-        priority: data.priority,
-        dueDate: data.dueDate,
-      });
+      const matchedApp = applications.find((a) => a.id === data.applicationId);
+      if (editingTask) {
+        const updated = await updateTaskAction(editingTask.id, {
+          title: data.title,
+          applicationId: data.applicationId,
+          priority: data.priority,
+          dueDate: data.dueDate,
+        });
 
-      if (updated) {
-        const matchedApp = applications.find((a) => a.id === data.applicationId);
-        const enriched: EnrichedTask = {
-          ...updated,
-          company_name: matchedApp?.company_name || null,
-          job_title: matchedApp?.job_title || null,
-        };
-        setTasks((prev) => prev.map((t) => (t.id === updated.id ? enriched : t)));
-        setShowEditModal(false);
-        setEditingTask(null);
+        if (updated) {
+          const enriched: EnrichedTask = {
+            ...updated,
+            company_name: matchedApp?.company_name || null,
+            job_title: matchedApp?.job_title || null,
+          };
+          setTasks((prev) => prev.map((t) => (t.id === updated.id ? enriched : t)));
+          setEditingTask(null);
+        }
+      } else {
+        const created = await createTaskAction(
+          data.applicationId,
+          data.title,
+          data.priority,
+          data.dueDate
+        );
+        if (created) {
+          const enriched: EnrichedTask = {
+            ...created,
+            company_name: matchedApp?.company_name || null,
+            job_title: matchedApp?.job_title || null,
+          };
+          setTasks((prev) => [enriched, ...prev]);
+          setShowTaskModal(false);
+        }
       }
     } finally {
-      setIsUpdatingTask(false);
+      setIsSubmittingTask(false);
     }
   };
 
-  // Delete Database Task
   const handleDeleteTask = (taskId: string) => {
     const task = tasks.find((t) => t.id === taskId) || null;
     setTaskToDelete(task);
@@ -108,7 +111,6 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
     }
   };
 
-  // Quick Add General Task
   const handleQuickAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!quickTitle.trim() || isQuickAdding) return;
@@ -125,34 +127,6 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
     }
   };
 
-  // Create Task via Modal
-  const handleCreateTask = async (data: import("./CreateTaskModal").CreateTaskData) => {
-    if (isCreatingTask) return;
-
-    setIsCreatingTask(true);
-    try {
-      const created = await createTaskAction(
-        data.applicationId,
-        data.title,
-        data.priority,
-        data.dueDate
-      );
-      if (created) {
-        const matchedApp = applications.find((a) => a.id === data.applicationId);
-        const enriched: EnrichedTask = {
-          ...created,
-          company_name: matchedApp?.company_name || null,
-          job_title: matchedApp?.job_title || null,
-        };
-        setTasks((prev) => [enriched, ...prev]);
-        setShowNewTaskModal(false);
-      }
-    } finally {
-      setIsCreatingTask(false);
-    }
-  };
-
-  // Filter tasks
   const filteredTasks = tasks.filter((t) => {
     if (filterTab === "pending") return !Boolean(t.completed);
     if (filterTab === "completed") return Boolean(t.completed);
@@ -169,7 +143,6 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
 
   return (
     <div className="space-y-8">
-      {/* Header & New Task Trigger */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-on-surface tracking-tight">
@@ -182,7 +155,10 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
 
         <button
           type="button"
-          onClick={() => setShowNewTaskModal(true)}
+          onClick={() => {
+            setEditingTask(null);
+            setShowTaskModal(true);
+          }}
           className="w-full sm:w-auto justify-center px-4 sm:px-5 py-2.5 rounded-full bg-primary text-on-primary text-xs font-semibold hover:bg-primary/90 transition-all shadow-sm hover:shadow-md flex items-center gap-2 cursor-pointer"
         >
           <span className="material-symbols-outlined text-base">add</span>
@@ -190,13 +166,11 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
         </button>
       </div>
 
-      {/* Main Grid: General Tasks (left, 1 col) & Application Tasks (right, 2 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* General Standalone Tasks */}
         <GeneralTasksSidebar
           tasks={tasks}
           onToggleTask={handleToggleTask}
-          onEditTask={handleOpenEdit}
+          onEditTask={(task) => setEditingTask(task)}
           onDeleteTask={handleDeleteTask}
           quickTitle={quickTitle}
           onQuickTitleChange={setQuickTitle}
@@ -204,7 +178,6 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
           isQuickAdding={isQuickAdding}
         />
 
-        {/* Application Linked Tasks */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -226,7 +199,7 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
                 key={task.id}
                 task={task}
                 onToggle={handleToggleTask}
-                onEdit={handleOpenEdit}
+                onEdit={(target) => setEditingTask(target)}
                 onDelete={handleDeleteTask}
               />
             ))}
@@ -248,30 +221,17 @@ export function TaskManager({ initialTasks, applications }: TaskManagerProps) {
         </div>
       </div>
 
-      {/* Create Task Modal */}
       <CreateTaskModal
-        isOpen={showNewTaskModal}
-        onClose={() => setShowNewTaskModal(false)}
-        onSubmit={handleCreateTask}
+        isOpen={showTaskModal || Boolean(editingTask)}
+        onClose={() => {
+          setShowTaskModal(false);
+          setEditingTask(null);
+        }}
+        task={editingTask}
+        onSubmit={handleModalSubmit}
         applications={applications}
-        isSubmitting={isCreatingTask}
+        isSubmitting={isSubmittingTask}
       />
-
-      {/* Edit Task Modal */}
-      {editingTask && (
-        <EditTaskModal
-          key={editingTask.id}
-          isOpen={showEditModal}
-          onClose={() => {
-            setShowEditModal(false);
-            setEditingTask(null);
-          }}
-          task={editingTask}
-          onSubmit={handleSaveEdit}
-          applications={applications}
-          isSubmitting={isUpdatingTask}
-        />
-      )}
 
       <DeleteModal
         isOpen={Boolean(taskToDelete)}

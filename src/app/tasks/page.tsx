@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
 import { tasksService } from "@/lib/services/tasksService";
 import { applicationsService } from "@/lib/services/applicationsService";
@@ -7,11 +8,13 @@ export const dynamic = "force-dynamic";
 
 export default async function TasksPage() {
   const user = await getCurrentUser();
-  const userId = user?.id || "dev-user-001";
+  if (!user) {
+    redirect("/login");
+  }
 
   const [tasks, appsResult] = await Promise.all([
-    tasksService.getAllUserTasks(userId),
-    applicationsService.listApplications(userId, { pageSize: 100 }),
+    tasksService.getAllUserTasks(user.id),
+    applicationsService.listApplications(user.id, { pageSize: 100 }),
   ]);
 
   return (

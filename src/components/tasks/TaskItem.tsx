@@ -1,13 +1,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
-import { EnrichedTask, TaskPriority } from "@/types/database";
+import { EnrichedTask, TaskPriority, PRIORITY_BADGES } from "@/types/database";
 import { FloatingDropdown } from "@/components/common/FloatingDropdown";
-
-const PRIORITY_BADGES: Record<TaskPriority, { bg: string; text: string; border: string }> = {
-  high: { bg: "bg-error/10", text: "text-error", border: "border-error/20" },
-  medium: { bg: "bg-status-interviewing/15", text: "text-status-interviewing", border: "border-status-interviewing/30" },
-  low: { bg: "bg-surface-variant", text: "text-on-surface-variant", border: "border-outline-variant/40" },
-};
 
 interface TaskItemProps {
   task: EnrichedTask;

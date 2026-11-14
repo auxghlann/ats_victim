@@ -1,23 +1,16 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Application, EnrichedTask, Task, TaskPriority } from "@/types/database";
+import { Application, EnrichedTask, Task, TaskPriority, PRIORITY_BADGES } from "@/types/database";
 import {
   toggleTaskAction,
   createTaskAction,
   updateTaskAction,
   deleteTaskAction,
 } from "@/app/actions/tasksAction";
-import { CreateTaskModal } from "@/components/tasks/CreateTaskModal";
-import { EditTaskModal } from "@/components/tasks/EditTaskModal";
+import { CreateTaskModal, CreateTaskData } from "@/components/tasks/CreateTaskModal";
 import { FloatingDropdown } from "@/components/common/FloatingDropdown";
 import { DeleteModal } from "@/components/common/DeleteModal";
-
-const PRIORITY_BADGES: Record<TaskPriority, { bg: string; text: string; border: string }> = {
-  high: { bg: "bg-error/10", text: "text-error", border: "border-error/20" },
-  medium: { bg: "bg-status-interviewing/15", text: "text-status-interviewing", border: "border-status-interviewing/30" },
-  low: { bg: "bg-surface-variant", text: "text-on-surface-variant", border: "border-outline-variant/40" },
-};
 
 interface JobTasksSectionProps {
   application: Application;
@@ -47,7 +40,6 @@ function JobTaskRow({ task, onToggle, onEdit, onDelete }: JobTaskRowProps) {
       }`}
     >
       <div className="flex items-center gap-2.5 min-w-0 flex-1">
-        {/* Checkbox */}
         <button
           type="button"
           onClick={() => onToggle(task.id, task.completed)}
@@ -61,7 +53,6 @@ function JobTaskRow({ task, onToggle, onEdit, onDelete }: JobTaskRowProps) {
           <span className="material-symbols-outlined text-xs font-bold">check</span>
         </button>
 
-        {/* Title and metadata */}
         <div className="min-w-0 flex-1">
           <p
             className={`text-xs font-medium truncate ${
@@ -91,7 +82,6 @@ function JobTaskRow({ task, onToggle, onEdit, onDelete }: JobTaskRowProps) {
         </div>
       </div>
 
-      {/* Action Menu Button & Floating Dropdown */}
       <div className="relative shrink-0 ml-2">
         <button
           ref={buttonRef}
@@ -189,17 +179,43 @@ export function JobTasksSection({
   };
 
   const handleEditClick = (task: Task) => {
-    const enriched: EnrichedTask = {
+    setEditingTask({
       ...task,
       company_name: application.company_name,
       job_title: application.job_title,
-    };
-    setEditingTask(enriched);
+    });
+  };
+
+  const handleModalSubmit = async (data: CreateTaskData) => {
+    setIsSubmitting(true);
+    try {
+      if (editingTask) {
+        const updated = await updateTaskAction(editingTask.id, data, application.id);
+        if (updated) {
+          setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+          setEditingTask(null);
+        }
+      } else {
+        const newTask = await createTaskAction(
+          application.id,
+          data.title,
+          data.priority,
+          data.dueDate
+        );
+        if (newTask) {
+          setTasks((prev) => [...prev, newTask]);
+          setIsCreateOpen(false);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to save task:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="p-6 bg-surface rounded-2xl border border-outline-variant/40 shadow-sm space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-bold text-on-surface">Linked Tasks</h2>
@@ -210,7 +226,10 @@ export function JobTasksSection({
 
         <button
           type="button"
-          onClick={() => setIsCreateOpen(true)}
+          onClick={() => {
+            setEditingTask(null);
+            setIsCreateOpen(true);
+          }}
           className="px-3 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 transition-all flex items-center gap-1 shadow-sm cursor-pointer"
         >
           <span className="material-symbols-outlined text-sm font-bold">add</span>
@@ -218,7 +237,6 @@ export function JobTasksSection({
         </button>
       </div>
 
-      {/* Task List */}
       <div className="space-y-2.5">
         {tasks.map((task) => (
           <JobTaskRow
@@ -237,62 +255,19 @@ export function JobTasksSection({
         )}
       </div>
 
-      {/* Reused Create Task Modal */}
       <CreateTaskModal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
+        isOpen={isCreateOpen || Boolean(editingTask)}
+        onClose={() => {
+          setIsCreateOpen(false);
+          setEditingTask(null);
+        }}
+        task={editingTask}
         applications={applications}
         disableApplicationSelect={true}
         defaultApplicationId={application.id}
         isSubmitting={isSubmitting}
-        onSubmit={async (data) => {
-          setIsSubmitting(true);
-          try {
-            const newTask = await createTaskAction(
-              application.id,
-              data.title,
-              data.priority,
-              data.dueDate
-            );
-            if (newTask) {
-              setTasks((prev) => [...prev, newTask]);
-              setIsCreateOpen(false);
-            }
-          } catch (err) {
-            console.error("Failed to create task:", err);
-          } finally {
-            setIsSubmitting(false);
-          }
-        }}
+        onSubmit={handleModalSubmit}
       />
-
-      {/* Reused Edit Task Modal */}
-      {editingTask && (
-        <EditTaskModal
-          isOpen={Boolean(editingTask)}
-          onClose={() => setEditingTask(null)}
-          task={editingTask}
-          applications={applications}
-          disableApplicationSelect={true}
-          isSubmitting={isSubmitting}
-          onSubmit={async (data) => {
-            setIsSubmitting(true);
-            try {
-              const updated = await updateTaskAction(editingTask.id, data, application.id);
-              if (updated) {
-                setTasks((prev) =>
-                  prev.map((t) => (t.id === updated.id ? updated : t))
-                );
-                setEditingTask(null);
-              }
-            } catch (err) {
-              console.error("Failed to update task:", err);
-            } finally {
-              setIsSubmitting(false);
-            }
-          }}
-        />
-      )}
 
       <DeleteModal
         isOpen={Boolean(taskToDelete)}

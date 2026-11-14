@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { Application, EnrichedInterview } from "@/types/database";
-import { CreateInterviewInput } from "@/lib/services/interviewsService";
 import { toLocalDateString } from "@/lib/utils/date";
 import {
   createInterviewAction,
@@ -12,8 +11,7 @@ import {
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarGrid, CalendarCell } from "./CalendarGrid";
 import { DateSchedulePanel } from "./DateSchedulePanel";
-import { ScheduleInterviewModal } from "./ScheduleInterviewModal";
-import { EditInterviewModal } from "./EditInterviewModal";
+import { ScheduleInterviewModal, ScheduleInterviewData } from "./ScheduleInterviewModal";
 import { DeleteModal } from "@/components/common/DeleteModal";
 
 interface InterviewsCalendarProps {
@@ -24,85 +22,44 @@ interface InterviewsCalendarProps {
 export function InterviewsCalendar({ initialInterviews, applications }: InterviewsCalendarProps) {
   const [interviews, setInterviews] = useState<EnrichedInterview[]>(initialInterviews);
 
-  // Calendar View State: Month viewed
+  // Calendar View State: Always default to current month and today's local date
   const [viewDate, setViewDate] = useState(() => {
-    if (initialInterviews.length > 0) {
-      const firstDate = new Date(initialInterviews[0].scheduled_at);
-      if (!isNaN(firstDate.getTime())) {
-        return new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
-      }
-    }
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth(), 1);
   });
 
-  // Selected date for schedule sidebar
-  const [selectedDateStr, setSelectedDateStr] = useState<string>(() => {
-    if (initialInterviews.length > 0) {
-      const local = toLocalDateString(initialInterviews[0].scheduled_at);
-      if (local) return local;
-    }
-    return toLocalDateString(new Date());
-  });
+  const [selectedDateStr, setSelectedDateStr] = useState<string>(() =>
+    toLocalDateString(new Date())
+  );
 
   const [viewMode, setViewMode] = useState<"month" | "week" | "day">("month");
 
-  // Schedule Interview Modal State
+  // Schedule / Edit Interview Modal State
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Edit Interview Modal State
-  const [showEditModal, setShowEditModal] = useState(false);
   const [editingInterview, setEditingInterview] = useState<EnrichedInterview | null>(null);
-  const [isUpdatingInterview, setIsUpdatingInterview] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [interviewToDelete, setInterviewToDelete] = useState<EnrichedInterview | null>(null);
 
-  // Dynamic navigation handlers for Month, Week, and Day
+  const shiftDate = (daysDelta: number) => {
+    const cur = new Date(`${selectedDateStr}T00:00:00`);
+    cur.setDate(cur.getDate() + daysDelta);
+    setSelectedDateStr(toLocalDateString(cur));
+    setViewDate(new Date(cur.getFullYear(), cur.getMonth(), 1));
+  };
+
   const handlePrev = () => {
     if (viewMode === "month") {
       setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-    } else if (viewMode === "week") {
-      const cur = new Date(`${selectedDateStr}T00:00:00`);
-      cur.setDate(cur.getDate() - 7);
-      const y = cur.getFullYear();
-      const m = String(cur.getMonth() + 1).padStart(2, "0");
-      const d = String(cur.getDate()).padStart(2, "0");
-      const dStr = `${y}-${m}-${d}`;
-      setSelectedDateStr(dStr);
-      setViewDate(new Date(cur.getFullYear(), cur.getMonth(), 1));
     } else {
-      const cur = new Date(`${selectedDateStr}T00:00:00`);
-      cur.setDate(cur.getDate() - 1);
-      const y = cur.getFullYear();
-      const m = String(cur.getMonth() + 1).padStart(2, "0");
-      const d = String(cur.getDate()).padStart(2, "0");
-      const dStr = `${y}-${m}-${d}`;
-      setSelectedDateStr(dStr);
-      setViewDate(new Date(cur.getFullYear(), cur.getMonth(), 1));
+      shiftDate(viewMode === "week" ? -7 : -1);
     }
   };
 
   const handleNext = () => {
     if (viewMode === "month") {
       setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-    } else if (viewMode === "week") {
-      const cur = new Date(`${selectedDateStr}T00:00:00`);
-      cur.setDate(cur.getDate() + 7);
-      const y = cur.getFullYear();
-      const m = String(cur.getMonth() + 1).padStart(2, "0");
-      const d = String(cur.getDate()).padStart(2, "0");
-      const dStr = `${y}-${m}-${d}`;
-      setSelectedDateStr(dStr);
-      setViewDate(new Date(cur.getFullYear(), cur.getMonth(), 1));
     } else {
-      const cur = new Date(`${selectedDateStr}T00:00:00`);
-      cur.setDate(cur.getDate() + 1);
-      const y = cur.getFullYear();
-      const m = String(cur.getMonth() + 1).padStart(2, "0");
-      const d = String(cur.getDate()).padStart(2, "0");
-      const dStr = `${y}-${m}-${d}`;
-      setSelectedDateStr(dStr);
-      setViewDate(new Date(cur.getFullYear(), cur.getMonth(), 1));
+      shiftDate(viewMode === "week" ? 7 : 1);
     }
   };
 
@@ -138,11 +95,9 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
 
     const cells: CalendarCell[] = [];
 
-    // Prev month padding
     for (let i = firstDayOfWeek - 1; i >= 0; i--) {
       const dayNum = daysInPrevMonth - i;
-      const prevMonthDate = new Date(currentYear, currentMonthIdx - 1, dayNum);
-      const dateStr = toLocalDateString(prevMonthDate);
+      const dateStr = toLocalDateString(new Date(currentYear, currentMonthIdx - 1, dayNum));
       cells.push({
         dayNum,
         dateStr,
@@ -151,10 +106,8 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
       });
     }
 
-    // Current month days
     for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
-      const cellDate = new Date(currentYear, currentMonthIdx, dayNum);
-      const dateStr = toLocalDateString(cellDate);
+      const dateStr = toLocalDateString(new Date(currentYear, currentMonthIdx, dayNum));
       cells.push({
         dayNum,
         dateStr,
@@ -163,11 +116,9 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
       });
     }
 
-    // Next month padding to fill grid
     const remaining = 42 - cells.length;
     for (let dayNum = 1; dayNum <= remaining; dayNum++) {
-      const nextMonthDate = new Date(currentYear, currentMonthIdx + 1, dayNum);
-      const dateStr = toLocalDateString(nextMonthDate);
+      const dateStr = toLocalDateString(new Date(currentYear, currentMonthIdx + 1, dayNum));
       cells.push({
         dayNum,
         dateStr,
@@ -179,76 +130,43 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
     return cells;
   }, [currentYear, currentMonthIdx, interviewsByDate]);
 
-  // Create Interview submit handler
-  const handleScheduleSubmit = async (data: import("./ScheduleInterviewModal").ScheduleInterviewData) => {
+  const handleModalSubmit = async (data: ScheduleInterviewData) => {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
     try {
-      const input: CreateInterviewInput = {
-        applicationId: data.applicationId,
-        roundName: data.roundName,
-        scheduledAt: data.scheduledAt,
-        meetingLink: data.meetingLink,
-        notes: data.notes,
-      };
-
-      const created = await createInterviewAction(input);
-      if (created) {
-        const matchedApp = applications.find((a) => a.id === data.applicationId);
-        const enriched: EnrichedInterview = {
-          ...created,
-          company_name: matchedApp?.company_name || null,
-          job_title: matchedApp?.job_title || null,
-          status: matchedApp?.status || null,
-        };
-        setInterviews((prev) => [...prev, enriched]);
-        setShowScheduleModal(false);
-        setSelectedDateStr(toLocalDateString(data.scheduledAt) || toLocalDateString(new Date()));
+      const matchedApp = applications.find((a) => a.id === data.applicationId);
+      if (editingInterview) {
+        const updated = await updateInterviewAction(editingInterview.id, data);
+        if (updated) {
+          const enriched: EnrichedInterview = {
+            ...updated,
+            company_name: matchedApp?.company_name || null,
+            job_title: matchedApp?.job_title || null,
+            status: matchedApp?.status || null,
+          };
+          setInterviews((prev) => prev.map((i) => (i.id === updated.id ? enriched : i)));
+          setEditingInterview(null);
+        }
+      } else {
+        const created = await createInterviewAction(data);
+        if (created) {
+          const enriched: EnrichedInterview = {
+            ...created,
+            company_name: matchedApp?.company_name || null,
+            job_title: matchedApp?.job_title || null,
+            status: matchedApp?.status || null,
+          };
+          setInterviews((prev) => [...prev, enriched]);
+          setShowScheduleModal(false);
+          setSelectedDateStr(toLocalDateString(data.scheduledAt) || toLocalDateString(new Date()));
+        }
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Open Edit Modal
-  const handleOpenEdit = (interview: EnrichedInterview) => {
-    setEditingInterview(interview);
-    setShowEditModal(true);
-  };
-
-  // Save Edit Interview
-  const handleSaveEdit = async (data: import("./EditInterviewModal").EditInterviewData) => {
-    if (!editingInterview || isUpdatingInterview) return;
-
-    setIsUpdatingInterview(true);
-    try {
-      const updated = await updateInterviewAction(editingInterview.id, {
-        applicationId: data.applicationId,
-        roundName: data.roundName,
-        scheduledAt: data.scheduledAt,
-        meetingLink: data.meetingLink,
-        notes: data.notes,
-      });
-
-      if (updated) {
-        const matchedApp = applications.find((a) => a.id === data.applicationId);
-        const enriched: EnrichedInterview = {
-          ...updated,
-          company_name: matchedApp?.company_name || null,
-          job_title: matchedApp?.job_title || null,
-          status: matchedApp?.status || null,
-        };
-        setInterviews((prev) => prev.map((i) => (i.id === updated.id ? enriched : i)));
-        setShowEditModal(false);
-        setEditingInterview(null);
-      }
-    } finally {
-      setIsUpdatingInterview(false);
-    }
-  };
-
-  // Delete Interview handler
   const handleDeleteInterview = (interviewId: string) => {
     const interview = interviews.find((i) => i.id === interviewId) || null;
     setInterviewToDelete(interview);
@@ -278,17 +196,18 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
 
   return (
     <div className="space-y-8">
-      {/* Calendar Header */}
       <CalendarHeader
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         onPrevMonth={handlePrev}
         onNextMonth={handleNext}
         onToday={handleToday}
-        onOpenScheduleModal={() => setShowScheduleModal(true)}
+        onOpenScheduleModal={() => {
+          setEditingInterview(null);
+          setShowScheduleModal(true);
+        }}
       />
 
-      {/* Main Grid: Calendar Grid & Daily Schedule */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <CalendarGrid
@@ -302,41 +221,30 @@ export function InterviewsCalendar({ initialInterviews, applications }: Intervie
           />
         </div>
 
-        {/* Selected Date Schedule Panel */}
         <DateSchedulePanel
           selectedDateStr={selectedDateStr}
           events={selectedDateEvents}
-          onEditInterview={handleOpenEdit}
+          onEditInterview={(interview) => setEditingInterview(interview)}
           onDeleteInterview={handleDeleteInterview}
-          onOpenScheduleModal={() => setShowScheduleModal(true)}
+          onOpenScheduleModal={() => {
+            setEditingInterview(null);
+            setShowScheduleModal(true);
+          }}
         />
       </div>
 
-      {/* Schedule Interview Modal */}
       <ScheduleInterviewModal
-        isOpen={showScheduleModal}
-        onClose={() => setShowScheduleModal(false)}
-        onSubmit={handleScheduleSubmit}
+        isOpen={showScheduleModal || Boolean(editingInterview)}
+        onClose={() => {
+          setShowScheduleModal(false);
+          setEditingInterview(null);
+        }}
+        onSubmit={handleModalSubmit}
         applications={applications}
+        interview={editingInterview}
         defaultDateTime={`${selectedDateStr}T14:00`}
         isSubmitting={isSubmitting}
       />
-
-      {/* Edit Interview Modal */}
-      {editingInterview && (
-        <EditInterviewModal
-          key={editingInterview.id}
-          isOpen={showEditModal}
-          onClose={() => {
-            setShowEditModal(false);
-            setEditingInterview(null);
-          }}
-          onSubmit={handleSaveEdit}
-          applications={applications}
-          interview={editingInterview}
-          isSubmitting={isUpdatingInterview}
-        />
-      )}
 
       <DeleteModal
         isOpen={Boolean(interviewToDelete)}

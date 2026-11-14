@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Application, TaskPriority } from "@/types/database";
+import { Application, EnrichedTask, TaskPriority } from "@/types/database";
 
 export interface CreateTaskData {
   title: string;
@@ -14,6 +14,7 @@ interface CreateTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   applications: Application[];
+  task?: EnrichedTask | null;
   onSubmit: (data: CreateTaskData) => Promise<void>;
   isSubmitting: boolean;
   disableApplicationSelect?: boolean;
@@ -24,20 +25,31 @@ export function CreateTaskModal({
   isOpen,
   onClose,
   applications,
+  task,
   onSubmit,
   isSubmitting,
   disableApplicationSelect,
   defaultApplicationId,
 }: CreateTaskModalProps) {
-  const [title, setTitle] = useState("");
-  const [applicationId, setApplicationId] = useState(defaultApplicationId || "");
-  const [priority, setPriority] = useState<TaskPriority>("medium");
-  const [dueDate, setDueDate] = useState("");
+  const isEdit = Boolean(task);
 
-  const [prevDefaultAppId, setPrevDefaultAppId] = useState(defaultApplicationId);
-  if (defaultApplicationId !== prevDefaultAppId) {
-    setPrevDefaultAppId(defaultApplicationId);
-    setApplicationId(defaultApplicationId || "");
+  const [title, setTitle] = useState(task?.title || "");
+  const [applicationId, setApplicationId] = useState(
+    task?.application_id || defaultApplicationId || ""
+  );
+  const [priority, setPriority] = useState<TaskPriority>(
+    (task?.priority as TaskPriority) || "medium"
+  );
+  const [dueDate, setDueDate] = useState(task?.due_date || "");
+
+  const [prevKey, setPrevKey] = useState(`${task?.id || "new"}:${defaultApplicationId || ""}`);
+  const currentKey = `${task?.id || "new"}:${defaultApplicationId || ""}`;
+  if (currentKey !== prevKey) {
+    setPrevKey(currentKey);
+    setTitle(task?.title || "");
+    setApplicationId(task?.application_id || defaultApplicationId || "");
+    setPriority((task?.priority as TaskPriority) || "medium");
+    setDueDate(task?.due_date || "");
   }
 
   if (!isOpen) return null;
@@ -53,31 +65,45 @@ export function CreateTaskModal({
       dueDate: dueDate || null,
     });
 
-    setTitle("");
-    setApplicationId("");
-    setPriority("medium");
-    setDueDate("");
+    if (!isEdit) {
+      setTitle("");
+      setApplicationId(defaultApplicationId || "");
+      setPriority("medium");
+      setDueDate("");
+    }
   };
 
   const handleClose = () => {
-    setTitle("");
-    setApplicationId("");
-    setPriority("medium");
-    setDueDate("");
+    if (!isEdit) {
+      setTitle("");
+      setApplicationId(defaultApplicationId || "");
+      setPriority("medium");
+      setDueDate("");
+    }
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 transition-opacity">
-      <div className="bg-surface rounded-2xl border border-outline-variant/40 shadow-2xl max-w-md w-full p-6 space-y-5">
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="bg-surface rounded-2xl border border-outline-variant/40 shadow-2xl max-w-md w-full p-6 space-y-5"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <span className="material-symbols-outlined text-lg">add_task</span>
+              <span className="material-symbols-outlined text-lg">
+                {isEdit ? "edit" : "add_task"}
+              </span>
             </div>
             <div>
-              <h3 className="text-base font-bold text-on-surface">New Task</h3>
-              <p className="text-xs text-on-surface-variant">Create an action item for your job search</p>
+              <h3 className="text-base font-bold text-on-surface">
+                {isEdit ? "Edit Task" : "New Task"}
+              </h3>
+              <p className="text-xs text-on-surface-variant">
+                {isEdit ? "Update action item details" : "Create an action item for your job search"}
+              </p>
             </div>
           </div>
           <button
@@ -167,9 +193,15 @@ export function CreateTaskModal({
               className="px-5 py-2 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
             >
               <span className="material-symbols-outlined text-sm font-bold">
-                {isSubmitting ? "hourglass_empty" : "add"}
+                {isSubmitting ? "hourglass_empty" : isEdit ? "check" : "add"}
               </span>
-              {isSubmitting ? "Creating..." : "Create Task"}
+              {isSubmitting
+                ? isEdit
+                  ? "Saving..."
+                  : "Creating..."
+                : isEdit
+                ? "Save Changes"
+                : "Create Task"}
             </button>
           </div>
         </form>

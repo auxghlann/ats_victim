@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Application } from "@/types/database";
-import { toIsoUtcString } from "@/lib/utils/date";
+import { Application, EnrichedInterview } from "@/types/database";
+import { toLocalDatetimeString, toIsoUtcString } from "@/lib/utils/date";
 
 export interface ScheduleInterviewData {
   applicationId: string;
@@ -17,6 +17,7 @@ interface ScheduleInterviewModalProps {
   onClose: () => void;
   applications: Application[];
   defaultDateTime?: string;
+  interview?: EnrichedInterview | null;
   onSubmit: (data: ScheduleInterviewData) => Promise<void>;
   isSubmitting: boolean;
 }
@@ -26,19 +27,37 @@ export function ScheduleInterviewModal({
   onClose,
   applications,
   defaultDateTime,
+  interview,
   onSubmit,
   isSubmitting,
 }: ScheduleInterviewModalProps) {
-  const [applicationId, setApplicationId] = useState(applications[0]?.id || "");
-  const [roundName, setRoundName] = useState("");
-  const [dateTime, setDateTime] = useState(defaultDateTime || "");
-  const [meetingLink, setMeetingLink] = useState("");
-  const [notes, setNotes] = useState("");
+  const isEdit = Boolean(interview);
 
-  const [prevDefault, setPrevDefault] = useState(defaultDateTime);
-  if (defaultDateTime !== prevDefault) {
-    setPrevDefault(defaultDateTime);
-    setDateTime(defaultDateTime || "");
+  const [applicationId, setApplicationId] = useState(
+    interview?.application_id || applications[0]?.id || ""
+  );
+  const [roundName, setRoundName] = useState(interview?.round_name || "");
+  const [dateTime, setDateTime] = useState(
+    interview?.scheduled_at
+      ? toLocalDatetimeString(interview.scheduled_at)
+      : defaultDateTime || ""
+  );
+  const [meetingLink, setMeetingLink] = useState(interview?.meeting_link || "");
+  const [notes, setNotes] = useState(interview?.notes || "");
+
+  const [prevKey, setPrevKey] = useState(`${interview?.id || "new"}:${defaultDateTime || ""}`);
+  const currentKey = `${interview?.id || "new"}:${defaultDateTime || ""}`;
+  if (currentKey !== prevKey) {
+    setPrevKey(currentKey);
+    setApplicationId(interview?.application_id || applications[0]?.id || "");
+    setRoundName(interview?.round_name || "");
+    setDateTime(
+      interview?.scheduled_at
+        ? toLocalDatetimeString(interview.scheduled_at)
+        : defaultDateTime || ""
+    );
+    setMeetingLink(interview?.meeting_link || "");
+    setNotes(interview?.notes || "");
   }
 
   if (!isOpen) return null;
@@ -55,29 +74,43 @@ export function ScheduleInterviewModal({
       notes: notes.trim() || null,
     });
 
-    setRoundName("");
-    setMeetingLink("");
-    setNotes("");
+    if (!isEdit) {
+      setRoundName("");
+      setMeetingLink("");
+      setNotes("");
+    }
   };
 
   const handleClose = () => {
-    setRoundName("");
-    setMeetingLink("");
-    setNotes("");
+    if (!isEdit) {
+      setRoundName("");
+      setMeetingLink("");
+      setNotes("");
+    }
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 transition-opacity">
-      <div className="bg-surface rounded-2xl border border-outline-variant/40 shadow-2xl max-w-md w-full p-6 space-y-5">
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="bg-surface rounded-2xl border border-outline-variant/40 shadow-2xl max-w-md w-full p-6 space-y-5"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <span className="material-symbols-outlined text-lg">calendar_add_on</span>
+              <span className="material-symbols-outlined text-lg">
+                {isEdit ? "edit_calendar" : "calendar_add_on"}
+              </span>
             </div>
             <div>
-              <h3 className="text-base font-bold text-on-surface">Schedule Interview</h3>
-              <p className="text-xs text-on-surface-variant">Log an upcoming interview round or call</p>
+              <h3 className="text-base font-bold text-on-surface">
+                {isEdit ? "Edit Interview" : "Schedule Interview"}
+              </h3>
+              <p className="text-xs text-on-surface-variant">
+                {isEdit ? "Update interview round details" : "Log an upcoming interview round or call"}
+              </p>
             </div>
           </div>
           <button
@@ -176,9 +209,15 @@ export function ScheduleInterviewModal({
               className="px-5 py-2 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
             >
               <span className="material-symbols-outlined text-sm font-bold">
-                {isSubmitting ? "hourglass_empty" : "add"}
+                {isSubmitting ? "hourglass_empty" : isEdit ? "check" : "add"}
               </span>
-              {isSubmitting ? "Scheduling..." : "Schedule Interview"}
+              {isSubmitting
+                ? isEdit
+                  ? "Saving..."
+                  : "Scheduling..."
+                : isEdit
+                ? "Save Changes"
+                : "Schedule Interview"}
             </button>
           </div>
         </form>

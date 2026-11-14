@@ -40,3 +40,8 @@ export function getFirebaseAdminAuth(): Auth | null {
   const app = getFirebaseAdminApp();
   return app ? getAuth(app) : null;
 }
+
+export const firebaseAdmin = {
+  getFirebaseAdminAuth,
+};
+

@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
 import { interviewsService } from "@/lib/services/interviewsService";
 import { applicationsService } from "@/lib/services/applicationsService";
@@ -7,11 +8,13 @@ export const dynamic = "force-dynamic";
 
 export default async function InterviewsPage() {
   const user = await getCurrentUser();
-  const userId = user?.id || "dev-user-001";
+  if (!user) {
+    redirect("/login");
+  }
 
   const [interviews, appsResult] = await Promise.all([
-    interviewsService.listInterviews(userId),
-    applicationsService.listApplications(userId, { pageSize: 100 }),
+    interviewsService.listInterviews(user.id),
+    applicationsService.listApplications(user.id, { pageSize: 100 }),
   ]);
 
   return (
@@ -21,4 +24,3 @@ export default async function InterviewsPage() {
     />
   );
 }
-

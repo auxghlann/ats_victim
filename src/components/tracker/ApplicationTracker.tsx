@@ -8,7 +8,6 @@ import {
   deleteApplicationAction,
 } from "@/app/actions/applicationsAction";
 import { AddApplicationModal } from "./AddApplicationModal";
-import { EditApplicationModal } from "./EditApplicationModal";
 import { DeleteModal } from "@/components/common/DeleteModal";
 import { exportApplicationsToCsv } from "@/lib/utils/export";
 import { TrackerToolbar } from "./TrackerToolbar";
@@ -45,14 +44,12 @@ export function ApplicationTracker({
   const [appToDelete, setAppToDelete] = useState<Application | null>(null);
   const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
-  const [syncToast, setSyncToast] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   // Column Resizing Hook
   const { colWidths, handleResizeStart, resetWidth, isResizingRef } = useColumnResize(TRACKER_COLUMNS);
   const isFirstRender = useRef(true);
 
-  // Debounce search input by 300ms to avoid firing server queries on every keystroke
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -80,7 +77,6 @@ export function ApplicationTracker({
     });
   }, [debouncedSearch, selectedStatus, selectedWorkSetup, sortBy, sortOrder, page]);
 
-  // Only load on user interactions; skip redundant fetch on initial mount
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -97,10 +93,6 @@ export function ApplicationTracker({
       setSortOrder("desc");
     }
     setPage(1);
-  };
-
-  const handleDelete = (app: Application) => {
-    setAppToDelete(app);
   };
 
   const handleConfirmDelete = async () => {
@@ -129,42 +121,8 @@ export function ApplicationTracker({
     }
   };
 
-  const handleSync = async () => {
-    startTransition(async () => {
-      try {
-        const fullDataset = await fetchApplicationsAction({
-          sortBy,
-          sortOrder,
-          page: 1,
-          pageSize: PAGE_SIZE,
-        });
-        setItems(fullDataset.items);
-        setTotal(fullDataset.total);
-        setSyncToast("Sync completed! Applications up to date.");
-        setTimeout(() => setSyncToast(null), 4000);
-      } catch (err) {
-        console.error("Sync failed:", err);
-      }
-    });
-  };
-
   return (
     <div className="space-y-6">
-      {/* Toast Notification */}
-      {syncToast && (
-        <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-xs font-semibold text-primary flex items-center justify-between animate-in fade-in">
-          <span>{syncToast}</span>
-          <button
-            type="button"
-            onClick={() => setSyncToast(null)}
-            className="text-primary hover:text-primary/80 cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-sm">close</span>
-          </button>
-        </div>
-      )}
-
-      {/* Toolbar */}
       <TrackerToolbar
         search={search}
         onSearchChange={(val) => {
@@ -181,14 +139,14 @@ export function ApplicationTracker({
           setSelectedWorkSetup(val);
           setPage(1);
         }}
-        onOpenAddModal={() => setIsAddModalOpen(true)}
+        onOpenAddModal={() => {
+          setEditingApp(null);
+          setIsAddModalOpen(true);
+        }}
         onExportCsv={handleExportCsv}
         isExporting={isExporting}
-        onSyncGmail={handleSync}
-        isPending={isPending}
       />
 
-      {/* Table Container */}
       <div className="bg-surface rounded-2xl border border-outline-variant/40 shadow-sm overflow-hidden min-h-[300px] flex flex-col justify-between">
         <div className="w-full overflow-x-auto min-h-[240px]">
           <table className="table-fixed w-full border-collapse min-w-[750px]">
@@ -212,7 +170,7 @@ export function ApplicationTracker({
                     setOpenActionMenuId(openActionMenuId === id ? null : id)
                   }
                   onEdit={(target) => setEditingApp(target)}
-                  onDelete={handleDelete}
+                  onDelete={(target) => setAppToDelete(target)}
                 />
               ))}
 
@@ -227,7 +185,6 @@ export function ApplicationTracker({
           </table>
         </div>
 
-        {/* Pagination Footer */}
         <TrackerPagination
           page={page}
           pageSize={PAGE_SIZE}
@@ -236,28 +193,19 @@ export function ApplicationTracker({
         />
       </div>
 
-      {/* Modals */}
       <AddApplicationModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        isOpen={isAddModalOpen || Boolean(editingApp)}
+        application={editingApp}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setEditingApp(null);
+        }}
         onSuccess={() => {
           setIsAddModalOpen(false);
+          setEditingApp(null);
           loadData();
         }}
       />
-
-      {editingApp && (
-        <EditApplicationModal
-          key={editingApp.id}
-          isOpen={Boolean(editingApp)}
-          application={editingApp}
-          onClose={() => setEditingApp(null)}
-          onSuccess={() => {
-            setEditingApp(null);
-            loadData();
-          }}
-        />
-      )}
 
       <DeleteModal
         isOpen={Boolean(appToDelete)}

@@ -15,8 +15,6 @@ export const SUPPORTED_CURRENCIES: CurrencyOption[] = [
   { code: "JPY", symbol: "¥", label: "JPY (¥)" },
 ];
 
-export const DEFAULT_CURRENCY = "PHP";
-
 export function getCurrencySymbol(currency?: string | null): string {
   if (!currency) return "₱";
   const match = SUPPORTED_CURRENCIES.find(

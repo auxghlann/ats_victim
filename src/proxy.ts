@@ -7,11 +7,7 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const sessionCookie = request.cookies.get("__session")?.value;
-  const isDevBypass =
-    process.env.NODE_ENV !== "production" &&
-    (process.env.NEXT_PUBLIC_DEV_AUTH_BYPASS === "true" ||
-      process.env.DEV_AUTH_BYPASS === "true");
-  const isAuthenticated = Boolean(sessionCookie) || isDevBypass;
+  const isAuthenticated = Boolean(sessionCookie);
 
   // If authenticated with real session cookie and visiting /login, redirect to /tracker
   if (pathname === "/login" && sessionCookie) {

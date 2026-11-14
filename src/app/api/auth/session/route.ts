@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFirebaseAdminAuth } from "@/lib/firebase/admin";
+import { firebaseAdmin } from "@/lib/firebase/admin";
 
 const FIVE_DAYS_MS = 60 * 60 * 24 * 5 * 1000;
 
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const adminAuth = getFirebaseAdminAuth();
+    const adminAuth = firebaseAdmin.getFirebaseAdminAuth();
     if (!adminAuth) {
       return NextResponse.json(
         { success: false, error: "Firebase Admin is not configured on the server" },

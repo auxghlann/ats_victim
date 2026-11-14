@@ -1,20 +1,12 @@
 import { interviewsRepository, CreateInterviewData } from "@/lib/repositories/interviewsRepository";
 import { applicationsRepository } from "@/lib/repositories/applicationsRepository";
 import { Interview, EnrichedInterview } from "@/types/database";
-import { getCachedData, setCachedData, invalidateCache } from "./cache";
 
 export type CreateInterviewInput = CreateInterviewData;
 
 export async function listInterviews(userId: string): Promise<EnrichedInterview[]> {
   if (!userId) throw new Error("User ID is required");
-
-  const cacheKey = `interviews:${userId}`;
-  const cached = getCachedData<EnrichedInterview[]>(cacheKey);
-  if (cached) return cached;
-
-  const interviews = await interviewsRepository.listInterviewsByUserId(userId);
-  setCachedData(cacheKey, interviews, 15);
-  return interviews;
+  return await interviewsRepository.listInterviewsByUserId(userId);
 }
 
 export async function createInterview(userId: string, data: CreateInterviewInput): Promise<Interview> {
@@ -26,17 +18,13 @@ export async function createInterview(userId: string, data: CreateInterviewInput
   const app = await applicationsRepository.getApplicationById(userId, data.applicationId);
   if (!app) throw new Error("Application not found or unauthorized");
 
-  const interview = await interviewsRepository.createInterview(userId, {
+  return await interviewsRepository.createInterview(userId, {
     applicationId: data.applicationId,
     roundName: data.roundName.trim(),
     scheduledAt: data.scheduledAt,
     meetingLink: data.meetingLink?.trim() || null,
     notes: data.notes?.trim() || null,
   });
-
-  invalidateCache(`interviews:${userId}`);
-  invalidateCache(`dash:${userId}`);
-  return interview;
 }
 
 export type UpdateInterviewInput = {
@@ -64,9 +52,6 @@ export async function updateInterview(
 
   const updated = await interviewsRepository.updateInterview(userId, interviewId, updates);
   if (!updated) throw new Error("Interview not found or failed to update");
-
-  invalidateCache(`interviews:${userId}`);
-  invalidateCache(`dash:${userId}`);
   return updated;
 }
 
@@ -74,9 +59,6 @@ export async function deleteInterview(userId: string, interviewId: string): Prom
   if (!userId || !interviewId) throw new Error("User ID and Interview ID are required");
   const deleted = await interviewsRepository.deleteInterview(userId, interviewId);
   if (!deleted) throw new Error("Interview not found or already deleted");
-
-  invalidateCache(`interviews:${userId}`);
-  invalidateCache(`dash:${userId}`);
   return true;
 }
 

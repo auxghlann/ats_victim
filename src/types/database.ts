@@ -13,25 +13,19 @@ export const STATUS_BADGE_CLASSES: Record<ApplicationStatus, string> = {
   rejected: "bg-[#fce8e6] text-[#c5221f] border-[#fad2cf]",
 };
 
-
 export type TaskPriority = "low" | "medium" | "high";
+
+export const PRIORITY_BADGES: Record<TaskPriority, { bg: string; text: string; border: string }> = {
+  high: { bg: "bg-error/10", text: "text-error", border: "border-error/20" },
+  medium: { bg: "bg-status-interviewing/15", text: "text-status-interviewing", border: "border-status-interviewing/30" },
+  low: { bg: "bg-surface-variant", text: "text-on-surface-variant", border: "border-outline-variant/40" },
+};
 
 export interface User {
   id: string;
   email: string;
   name?: string | null;
   avatar_url?: string | null;
-  created_at?: string;
-}
-
-export interface UserIntegration {
-  id: string;
-  user_id: string;
-  provider: string;
-  encrypted_refresh_token: string;
-  scopes?: string;
-  last_synced_at?: string | null;
-  is_active: number | boolean;
   created_at?: string;
 }
 
@@ -72,18 +66,9 @@ export interface ApplicationDetail {
   posting_url?: string | null;
   job_description?: string | null;
   notes?: NoteItem[] | null;
-  timeline: string | TimelineEvent[]; // String in SQLite, parsed to TimelineEvent[]
+  timeline: string | TimelineEvent[];
   created_at?: string;
   updated_at?: string;
-}
-
-export interface ProcessedEmail {
-  id: string;
-  user_id: string;
-  message_id: string;
-  sender?: string | null;
-  subject?: string | null;
-  processed_at?: string;
 }
 
 export interface Task {
@@ -118,4 +103,3 @@ export interface EnrichedInterview extends Interview {
   job_title?: string | null;
   status?: ApplicationStatus | null;
 }
-

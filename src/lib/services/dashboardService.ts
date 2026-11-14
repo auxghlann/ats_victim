@@ -1,7 +1,6 @@
 import { applicationsRepository } from "@/lib/repositories/applicationsRepository";
 import { tasksRepository } from "@/lib/repositories/tasksRepository";
 import { Application } from "@/types/database";
-import { getCachedData, setCachedData } from "./cache";
 
 export interface DashboardMetrics {
   counts: {
@@ -14,16 +13,12 @@ export interface DashboardMetrics {
     pending_tasks: number;
     [key: string]: number;
   };
-  weeklyActivity: { day: string; date: string; count: number; heightPct: number }[];
+  weeklyActivity: { day: string; date: string; count: number }[];
   recentApplications: Application[];
 }
 
 export async function getDashboardMetrics(userId: string): Promise<DashboardMetrics> {
   if (!userId) throw new Error("User ID is required");
-
-  const cacheKey = `dash:${userId}`;
-  const cached = getCachedData<DashboardMetrics>(cacheKey);
-  if (cached) return cached;
 
   const now = new Date();
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -42,7 +37,6 @@ export async function getDashboardMetrics(userId: string): Promise<DashboardMetr
     applicationsRepository.getWeeklyActivityDates(userId, sundayStr),
   ]);
 
-  // Aggregate static week activity in-memory
   const dayCounts = new Map<string, number>();
   for (const row of recentActivityRows) {
     const target = row.last_activity_date || row.date_applied;
@@ -62,14 +56,7 @@ export async function getDashboardMetrics(userId: string): Promise<DashboardMetr
     });
   }
 
-  // Ensure bars have a proportional height representation
-  const maxCount = Math.max(...weeklyActivity.map((w) => w.count), 1);
-  const activityWithHeights = weeklyActivity.map((w) => ({
-    ...w,
-    heightPct: Math.max(15, Math.min(100, Math.round((w.count / maxCount) * 90) + 10)),
-  }));
-
-  const result: DashboardMetrics = {
+  return {
     counts: {
       all: counts.all || 0,
       applied: counts.applied || 0,
@@ -79,12 +66,9 @@ export async function getDashboardMetrics(userId: string): Promise<DashboardMetr
       rejected: counts.rejected || 0,
       pending_tasks: pendingTasksCount,
     },
-    weeklyActivity: activityWithHeights,
+    weeklyActivity,
     recentApplications: recent.items,
   };
-
-  setCachedData(cacheKey, result, 15);
-  return result;
 }
 
 export const dashboardService = {
