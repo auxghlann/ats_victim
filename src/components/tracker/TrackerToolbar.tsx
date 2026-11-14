@@ -8,8 +8,6 @@ interface TrackerToolbarProps {
   onOpenAddModal: () => void;
   onExportCsv: () => void;
   isExporting: boolean;
-  onSyncGmail?: () => void;
-  isPending?: boolean;
 }
 
 export function TrackerToolbar({

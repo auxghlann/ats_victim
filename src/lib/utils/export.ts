@@ -5,9 +5,10 @@ import { Application } from "@/types/database";
  * - Wrap in quotes if it contains commas, double quotes, or newlines.
  * - Escape internal double quotes by doubling them (" -> "").
  */
-function escapeCsvCell(value: unknown): string {
+export function escapeCsvCell(value: unknown): string {
   if (value === null || value === undefined) return "";
-  const str = String(value);
+  const raw = String(value);
+  const str = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
   if (/[",\n\r]/.test(str)) {
     return `"${str.replace(/"/g, '""')}"`;
   }
@@ -21,12 +22,22 @@ export interface DownloadCsvOptions {
 }
 
 /**
+ * Formats headers and rows into an RFC 4180 CSV payload.
+ */
+export function buildCsvContent(
+  headers: string[],
+  rows: (string | number | null | undefined)[][]
+): string {
+  const headerLine = headers.map(escapeCsvCell).join(",");
+  const rowLines = rows.map((row) => row.map(escapeCsvCell).join(","));
+  return [headerLine, ...rowLines].join("\r\n");
+}
+
+/**
  * Generates and triggers browser download of a CSV file using native Blob and Object URLs.
  */
 export function downloadCsv({ filename, headers, rows }: DownloadCsvOptions): void {
-  const headerLine = headers.map(escapeCsvCell).join(",");
-  const rowLines = rows.map((row) => row.map(escapeCsvCell).join(","));
-  const csvContent = [headerLine, ...rowLines].join("\r\n");
+  const csvContent = buildCsvContent(headers, rows);
 
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);

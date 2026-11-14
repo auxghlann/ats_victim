@@ -204,20 +204,6 @@ export async function getStatusCounts(userId: string): Promise<Record<string, nu
   return counts;
 }
 
-export async function getActivityCountByDate(userId: string, dateStr: string): Promise<number> {
-  const { count, error } = await getSupabase()
-    .from("applications")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .or(`date_applied.eq.${dateStr},last_activity_date.eq.${dateStr}`);
-
-  if (error) {
-    console.error("Supabase getActivityCountByDate error:", error);
-    return 0;
-  }
-  return count || 0;
-}
-
 export async function getWeeklyActivityDates(
   userId: string,
   fromDateStr: string
@@ -242,6 +228,5 @@ export const applicationsRepository = {
   updateApplication,
   deleteApplication,
   getStatusCounts,
-  getActivityCountByDate,
   getWeeklyActivityDates,
 };

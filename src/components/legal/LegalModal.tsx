@@ -44,7 +44,11 @@ export function LegalModal({ isOpen, initialTab = "terms", onClose }: LegalModal
       />
 
       {/* Modal Dialog Container */}
-      <div className="relative z-10 w-full max-w-2xl bg-white rounded-3xl border border-slate-200/80 shadow-2xl overflow-hidden flex flex-col max-h-[88vh] animate-in fade-in zoom-in-95 duration-150">
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative z-10 w-full max-w-2xl bg-white rounded-3xl border border-slate-200/80 shadow-2xl overflow-hidden flex flex-col max-h-[88vh] animate-in fade-in zoom-in-95 duration-150"
+      >
         {/* Header */}
         <div className="px-4 py-3 sm:px-8 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 shrink-0">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">

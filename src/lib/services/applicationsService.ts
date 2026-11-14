@@ -6,7 +6,6 @@ import {
   ApplicationStatus,
   WorkSetup,
 } from "@/types/database";
-import { getCachedData, setCachedData, invalidateCache } from "./cache";
 
 export interface CreateApplicationInput {
   company_name: string;
@@ -28,16 +27,12 @@ export async function listApplications(
 ): Promise<{ items: Application[]; total: number; counts: Record<string, number> }> {
   if (!userId) throw new Error("User ID is required");
 
-  const cacheKey = `apps:${userId}:${JSON.stringify(options)}`;
-  const cached = getCachedData<{ items: Application[]; total: number; counts: Record<string, number> }>(cacheKey);
-  if (cached) return cached;
+  const [result, counts] = await Promise.all([
+    applicationsRepository.listApplications(userId, options),
+    applicationsRepository.getStatusCounts(userId),
+  ]);
 
-  const result = await applicationsRepository.listApplications(userId, options);
-  const counts = await applicationsRepository.getStatusCounts(userId);
-
-  const response = { ...result, counts };
-  setCachedData(cacheKey, response, 15);
-  return response;
+  return { ...result, counts };
 }
 
 export async function getApplicationDetail(
@@ -98,8 +93,6 @@ export async function createApplication(
     ],
   });
 
-  invalidateCache(`apps:${userId}`);
-  invalidateCache(`dash:${userId}`);
   return application;
 }
 
@@ -128,8 +121,6 @@ export async function updateStatus(
     snippet: `Status moved from ${existing.status} to ${newStatus}.`,
   });
 
-  invalidateCache(`apps:${userId}`);
-  invalidateCache(`dash:${userId}`);
   return updated;
 }
 
@@ -142,8 +133,6 @@ export async function updateApplication(
   const updated = await applicationsRepository.updateApplication(userId, applicationId, updates);
   if (!updated) throw new Error("Application not found or failed to update");
 
-  invalidateCache(`apps:${userId}`);
-  invalidateCache(`dash:${userId}`);
   return updated;
 }
 
@@ -153,8 +142,6 @@ export async function deleteApplication(userId: string, applicationId: string): 
   const deleted = await applicationsRepository.deleteApplication(userId, applicationId);
   if (!deleted) throw new Error("Application not found or already deleted");
 
-  invalidateCache(`apps:${userId}`);
-  invalidateCache(`dash:${userId}`);
   return true;
 }
 

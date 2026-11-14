@@ -43,16 +43,6 @@ export function AppLayout({ user, children }: AppLayoutProps) {
     }
   };
 
-  // Clean up any previously persisted keys so localStorage is not used
-  useEffect(() => {
-    try {
-      localStorage.removeItem("ats_sidebar_width");
-      localStorage.removeItem("ats_sidebar_collapsed");
-    } catch {
-      // Ignore storage access issues
-    }
-  }, []);
-
   if (pathname === "/login") {
     return <>{children}</>;
   }

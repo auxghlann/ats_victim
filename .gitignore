@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
 
 # next.js
 /.next/
@@ -59,3 +61,9 @@ supabase/
 .docs/
 
 .playwright-mcp/
+
+# Marketing video generator
+showcase-video/node_modules/
+showcase-video/.remotion/
+showcase-video/out/
+

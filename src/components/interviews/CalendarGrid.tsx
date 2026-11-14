@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EnrichedInterview, STATUS_BADGE_CLASSES } from "@/types/database";
+import { toLocalDateString } from "@/lib/utils/date";
 
 export interface CalendarCell {
   dayNum: number;
@@ -29,7 +30,7 @@ export function CalendarGrid({
   onSelectDate,
   interviewsByDate,
 }: CalendarGridProps) {
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = toLocalDateString(new Date());
 
   // Compute 7 days for the Week view based on selectedDateStr
   const weekDays = (() => {
@@ -42,10 +43,7 @@ export function CalendarGrid({
     for (let i = 0; i < 7; i++) {
       const d = new Date(startOfWeek);
       d.setDate(startOfWeek.getDate() + i);
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      const dStr = `${y}-${m}-${day}`;
+      const dStr = toLocalDateString(d);
       days.push({
         dateStr: dStr,
         dayNum: d.getDate(),

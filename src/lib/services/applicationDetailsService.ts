@@ -1,11 +1,6 @@
 import { applicationDetailsRepository } from "@/lib/repositories/applicationDetailsRepository";
 import { applicationsRepository } from "@/lib/repositories/applicationsRepository";
-import { ApplicationDetail, NoteItem, TimelineEvent } from "@/types/database";
-
-export async function getApplicationDetails(applicationId: string): Promise<ApplicationDetail | null> {
-  if (!applicationId) throw new Error("Application ID is required");
-  return await applicationDetailsRepository.getApplicationDetails(applicationId);
-}
+import { ApplicationDetail, NoteItem } from "@/types/database";
 
 export async function addNote(
   userId: string,
@@ -97,19 +92,9 @@ export async function updateJobDescription(
   });
 }
 
-export async function appendTimelineEvent(
-  applicationId: string,
-  event: TimelineEvent
-): Promise<ApplicationDetail> {
-  if (!applicationId) throw new Error("Application ID is required");
-  return await applicationDetailsRepository.appendTimelineEvent(applicationId, event);
-}
-
 export const applicationDetailsService = {
-  getApplicationDetails,
   addNote,
   updateNote,
   deleteNote,
   updateJobDescription,
-  appendTimelineEvent,
 };

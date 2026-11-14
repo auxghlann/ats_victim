@@ -6,7 +6,6 @@ interface ActivityDay {
   day: string;
   date: string;
   count: number;
-  heightPct: number;
 }
 
 interface WeeklyActivityChartProps {
