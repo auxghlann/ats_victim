@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signInWithPopup, signOut } from "firebase/auth";
 import { getFirebaseAuth, googleAuthProvider } from "@/lib/firebase/client";
+import { getAuthErrorMessage } from "@/lib/firebase/authErrors";
 import { LegalModal } from "@/components/legal/LegalModal";
 
 function LoginContent() {
@@ -23,9 +24,7 @@ function LoginContent() {
     try {
       const auth = getFirebaseAuth();
       if (!auth) {
-        throw new Error(
-          "Firebase credentials are not configured in your environment. Please add NEXT_PUBLIC_FIREBASE_* variables to .env.local, or enter as Dev User."
-        );
+        throw { code: "auth/config-missing" };
       }
 
       // 1. Client Google Sign-In with popup
@@ -40,8 +39,7 @@ function LoginContent() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to establish server session");
+        throw { code: "auth/session-failed" };
       }
 
       // 3. Clear client-side state per Firebase doc best practices for httpOnly cookies
@@ -51,12 +49,7 @@ function LoginContent() {
       router.push(redirectUrl);
       router.refresh();
     } catch (err: unknown) {
-      const error = err as { code?: string; message?: string };
-      if (error.code === "auth/popup-closed-by-user") {
-        setErrorMessage("Sign-in popup was closed before completing.");
-      } else {
-        setErrorMessage(error.message || "An unexpected error occurred during sign-in.");
-      }
+      setErrorMessage(getAuthErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
