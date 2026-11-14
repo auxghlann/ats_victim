@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const adminAuth = firebaseAdmin.getFirebaseAdminAuth();
     if (!adminAuth) {
       return NextResponse.json(
-        { success: false, error: "Firebase Admin is not configured on the server" },
+        { success: false, error: "Authentication service is temporarily unavailable" },
         { status: 503 }
       );
     }

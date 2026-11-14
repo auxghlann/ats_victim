@@ -117,13 +117,11 @@ export function AddApplicationModal({
 
       onSuccess();
       onClose();
-    } catch (err: unknown) {
+    } catch {
       setError(
-        err instanceof Error
-          ? err.message
-          : isEdit
-          ? "Failed to update application."
-          : "Failed to create application."
+        isEdit
+          ? "Unable to update application. Please try again."
+          : "Unable to create application. Please try again."
       );
     } finally {
       setLoading(false);
