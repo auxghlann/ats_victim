@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [v1.0.1] - 2026-11-15
+
+### Bug Fixes
+* Pin `jose` to `4.15.9` in `pnpm-workspace.yaml` so `firebase-admin/auth` and `jwks-rsa` load without `ERR_REQUIRE_ESM` under `pnpm` (`179b45a`)
+* Sanitize frontend and `/api/auth/session` error messages via `getAuthErrorMessage` (`src/lib/firebase/authErrors.ts`) and remove raw SDK/env error exposure in `LoginPage` and `AddApplicationModal` (`179b45a`)
+* Add App Router error boundary (`src/app/error.tsx`) with non-sensitive fallback UI (`179b45a`)
+
 ## [v1.0.0] - 2026-11-15
 
 ### Features
